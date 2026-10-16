@@ -1,107 +1,107 @@
 # TODO · PomodoroKnight
 
-> Las etiquetas **[D1]–[D6]** indican qué dominio del examen GH-600 practica cada tarea (ver [README](./README.md#-mapa-gh-600)).
-> Las tareas marcadas con 🎓 existen principalmente para aprender sintaxis o conceptos del examen.
+> The **[D1]–[D6]** labels indicate which GH-600 exam domain each task practices (see the [README](./README.md#-gh-600-map)).
+> Tasks marked 🎓 are primarily for learning exam syntax or concepts.
 
-## Fase 0 · Fundaciones
+## Phase 0 · Foundations
 - [ ] Scaffold Vite + TypeScript (vanilla)
-- [ ] Configurar `base: '/pomodoro-knight/'` en `vite.config.ts`
-- [ ] Configurar Vitest con un test de ejemplo
-- [ ] Lint + formato (ESLint + Prettier)
-- [ ] Script `validate:sprites` (dimensiones máx. 24×10, solo ASCII imprimible, cabecera válida)
-- [ ] Workflow CI: lint + test + validate:sprites + build
-- [ ] Workflow de deploy a GitHub Pages (Source: GitHub Actions)
+- [ ] Set `base: '/pomodoro-knight/'` in `vite.config.ts`
+- [ ] Configure Vitest with a sample test
+- [ ] Linting + formatting (ESLint + Prettier)
+- [ ] `validate:sprites` script (max dimensions 24×10, printable ASCII only, valid header)
+- [ ] CI workflow: lint + test + validate:sprites + build
+- [ ] GitHub Pages deploy workflow (Source: GitHub Actions)
 
-## Fase 0.5 · Dominar GitHub Actions 🎓 [D2][D4][D5]
-Objetivo: escribir y **saber leer** cada clave sin mirar la documentación.
+## Phase 0.5 · Mastering GitHub Actions 🎓 [D2][D4][D5]
+Goal: write and **know how to read** each key without looking at the documentation.
 
 ### CI (`.github/workflows/ci.yml`)
-- [ ] Triggers: `push` a `main`, `pull_request` y `workflow_dispatch`
-- [ ] `permissions: contents: read` a nivel de workflow (mínimo privilegio)
-- [ ] Jobs separados `lint`, `test`, `validate-sprites` y `build`, con `needs` para que `build` espere a los demás
-- [ ] `strategy.matrix` en `test` con varias versiones de Node (`[20, 22]`) y `fail-fast: false`
-- [ ] `concurrency` con `group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}` y `cancel-in-progress: true`
-- [ ] Job output: `validate-sprites` publica el nº de sprites vía `$GITHUB_OUTPUT` → `jobs.<id>.outputs` → lo lee `build` con `needs.<id>.outputs.<x>`
-- [ ] `build` sube `dist/` con `actions/upload-artifact` (`retention-days`, `if-no-files-found: error`)
-- [ ] Escribir un resumen en `$GITHUB_STEP_SUMMARY` (tabla de sprites validados)
-- [ ] Usar caché de npm con `actions/setup-node` (`cache: npm`)
+- [ ] Triggers: `push` to `main`, `pull_request`, and `workflow_dispatch`
+- [ ] Workflow-level `permissions: contents: read` (least privilege)
+- [ ] Separate `lint`, `test`, `validate-sprites`, and `build` jobs, with `needs` so `build` waits for the others
+- [ ] `strategy.matrix` in `test` with multiple Node versions (`[20, 22]`) and `fail-fast: false`
+- [ ] `concurrency` with `group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}` and `cancel-in-progress: true`
+- [ ] Job output: `validate-sprites` publishes the number of sprites via `$GITHUB_OUTPUT` → `jobs.<id>.outputs` → read by `build` using `needs.<id>.outputs.<x>`
+- [ ] `build` uploads `dist/` with `actions/upload-artifact` (`retention-days`, `if-no-files-found: error`)
+- [ ] Write a summary to `$GITHUB_STEP_SUMMARY` (table of validated sprites)
+- [ ] Use npm caching with `actions/setup-node` (`cache: npm`)
 
 ### Deploy (`.github/workflows/deploy.yml`)
-- [ ] Trigger `workflow_run` (cuando CI termina en `main`) o `push` a `main`
+- [ ] Trigger on `workflow_run` (when CI completes on `main`) or `push` to `main`
 - [ ] `permissions`: `pages: write`, `id-token: write`, `contents: read`
-- [ ] `environment: github-pages` con URL de salida (`steps.<id>.outputs.page_url`)
-- [ ] Añadir *required reviewer* al environment para practicar aprobaciones manuales [D6]
-- [ ] `concurrency: group: pages` con `cancel-in-progress: false` (y entender por qué es distinto al de CI)
-- [ ] Descargar el artifact de build con `actions/download-artifact`
+- [ ] `environment: github-pages` with an output URL (`steps.<id>.outputs.page_url`)
+- [ ] Add a *required reviewer* to the environment to practice manual approvals [D6]
+- [ ] `concurrency: group: pages` with `cancel-in-progress: false` (and understand why it's different from CI)
+- [ ] Download the build artifact with `actions/download-artifact`
 
-### Laboratorio (`.github/workflows/actions-lab.yml`) 🎓
-- [ ] `workflow_dispatch` con `inputs` de tipos `string`, `boolean` y `choice`
-- [ ] Imprimir contextos: `github.ref`, `ref_name`, `head_ref`, `base_ref`, `sha`, `run_id`, `run_number`, `run_attempt`, `actor`, `triggering_actor`, `workflow`
-- [ ] Comparar su valor en `push`, `pull_request` y en un *re-run* (anotar resultados en `docs/actions-contexts.md`)
-- [ ] `actions/checkout` con `ref: ${{ github.head_ref }}` vs. checkout por defecto en un PR
-- [ ] Condicionales `if:` con `success()`, `failure()`, `always()` y `contains()`
-- [ ] Workflow reutilizable con `on: workflow_call` (inputs + secrets + outputs) e invocarlo desde CI
+### Lab (`.github/workflows/actions-lab.yml`) 🎓
+- [ ] `workflow_dispatch` with `inputs` of types `string`, `boolean`, and `choice`
+- [ ] Print contexts: `github.ref`, `ref_name`, `head_ref`, `base_ref`, `sha`, `run_id`, `run_number`, `run_attempt`, `actor`, `triggering_actor`, `workflow`
+- [ ] Compare their values on `push`, `pull_request`, and a *re-run* (record findings in `docs/actions-contexts.md`)
+- [ ] Compare `actions/checkout` with `ref: ${{ github.head_ref }}` to the default checkout on a PR
+- [ ] `if:` conditionals using `success()`, `failure()`, `always()`, and `contains()`
+- [ ] Reusable workflow with `on: workflow_call` (inputs + secrets + outputs) and call it from CI
 
-## Fase 1 · MVP
-- [ ] Timer Pomodoro 25/5 (start / pause / reset)
-- [ ] Dígitos grandes en ASCII para el timer
-- [ ] Barra de progreso ASCII
-- [ ] Sistema de XP por pomodoro completado
-- [ ] Curva de niveles en `levels.json`
-- [ ] 5 sprites del tomate (uno por nivel) en `.txt`
-- [ ] Persistencia en `localStorage`
-- [ ] Anti-trampas: invalidar pomodoro al cambiar de pestaña o pausar demasiado
-- [ ] Fuente monoespaciada y estilo retro-terminal
+## Phase 1 · MVP
+- [ ] 25/5 Pomodoro timer (start / pause / reset)
+- [ ] Large ASCII digits for the timer
+- [ ] ASCII progress bar
+- [ ] XP system for completed pomodoros
+- [ ] Level curve in `levels.json`
+- [ ] 5 tomato sprites (one per level) in `.txt` files
+- [ ] Persistence in `localStorage`
+- [ ] Anti-cheating: invalidate the pomodoro when switching tabs or pausing for too long
+- [ ] Monospaced font and retro-terminal style
 
-## Fase 1.5 · Personalización de Copilot [D1][D2]
-- [ ] `.github/copilot-instructions.md` (stack, comandos, reglas del ASCII art)
-- [ ] `.github/instructions/sprites.instructions.md` con `applyTo: "sprites/**"`
-- [ ] `AGENTS.md` en la raíz
-- [ ] Prompt reutilizable `.github/prompts/review-sprite.prompt.md`
+## Phase 1.5 · Copilot customization [D1][D2]
+- [ ] `.github/copilot-instructions.md` (stack, commands, ASCII art rules)
+- [ ] `.github/instructions/sprites.instructions.md` with `applyTo: "sprites/**"`
+- [ ] Root-level `AGENTS.md`
+- [ ] Reusable prompt `.github/prompts/review-sprite.prompt.md`
 - [ ] Skill `.github/skills/validate-sprite/SKILL.md`
-- [ ] Agente `sprite-reviewer.agent.md` → `tools: [read, search]` (solo lectura)
-- [ ] Agente `herrero.agent.md` → `tools: [read, search, edit, execute]`
-- [ ] Agente `orchestrator.agent.md` → `tools: [read, search, agent]`
-- [ ] Protección de `main` con ruleset: PR obligatorio + checks de CI requeridos [D6]
+- [ ] `sprite-reviewer.agent.md` agent → `tools: [read, search]` (read-only)
+- [ ] `herrero.agent.md` agent → `tools: [read, search, edit, execute]`
+- [ ] `orchestrator.agent.md` agent → `tools: [read, search, agent]`
+- [ ] Protect `main` with a ruleset: required PR + required CI checks [D6]
 
-## Fase 2 · Primeros agentic workflows (gh-aw)
-> gh-aw **no entra en GH-600**, pero compila a Actions: revisar el `.lock.yml` generado es buena práctica de lectura de YAML.
-- [ ] Instalar gh-aw y configurar el engine (secret)
-- [ ] Workflow Issue Triage
-- [ ] Workflow CI Doctor
-- [ ] Plantillas de issues (bug / contenido / feature)
-- [ ] 🎓 Leer el `.lock.yml` de cada workflow e identificar `permissions`, jobs de `safe-outputs` y `concurrency`
+## Phase 2 · First agentic workflows (gh-aw)
+> gh-aw **isn't covered by GH-600**, but it compiles to Actions: reviewing the generated `.lock.yml` is good practice for reading YAML.
+- [ ] Install gh-aw and configure the engine (secret)
+- [ ] Issue Triage workflow
+- [ ] CI Doctor workflow
+- [ ] Issue templates (bug / content / feature)
+- [ ] 🎓 Read each workflow's `.lock.yml` and identify `permissions`, `safe-outputs` jobs, and `concurrency`
 
-## Fase 3 · Contenido generado por agentes
-- [ ] Workflow Herrero `/forge` (genera sprite + abre PR)
-- [ ] Workflow Sprite Preview (comenta el sprite en el PR)
+## Phase 3 · Agent-generated content
+- [ ] Blacksmith `/forge` workflow (generates a sprite + opens a PR)
+- [ ] Sprite Preview workflow (comments on the sprite in the PR)
 
-## Fase 3.5 · Copilot nativo: CLI, cloud agent y multi-agente [D2][D3][D5]
-- [ ] Herrero "nativo": workflow con `copilot -p --agent=herrero --no-ask-user` y `COPILOT_GITHUB_TOKEN`
-- [ ] Limitar herramientas en CI con `--allow-tool` / `--deny-tool`
-- [ ] `.github/workflows/copilot-setup-steps.yml` (job `copilot-setup-steps`: Node + `npm ci`)
-- [ ] Asignar un issue de contenido al cloud agent y practicar: **View session**, `@copilot` en el PR, **Approve and run workflows**
-- [ ] Pipeline `review` + `audit` → `consolidate` con `needs` y artifacts
-- [ ] Variante con `strategy.matrix.agent: [sprite-reviewer, auditor]`
-- [ ] MCP: añadir un servidor `local` (command/args) y otro `http` (url) a un agente; probar `server/tool` vs `server/*`
-- [ ] 🎓 Práctica local del CLI: `/plan`, `/delegate`, `/fleet`, `--resume`, `--continue`, `--autopilot`
-- [ ] 🎓 Inspeccionar `~/.copilot/logs/` y `~/.copilot/session-state/<id>/events.jsonl` (sesión nueva vs. reanudada)
+## Phase 3.5 · Native Copilot: CLI, cloud agent, and multi-agent [D2][D3][D5]
+- [ ] Native Blacksmith: workflow using `copilot -p --agent=herrero --no-ask-user` and `COPILOT_GITHUB_TOKEN`
+- [ ] Restrict tools in CI with `--allow-tool` / `--deny-tool`
+- [ ] `.github/workflows/copilot-setup-steps.yml` (`copilot-setup-steps` job: Node + `npm ci`)
+- [ ] Assign a content issue to the cloud agent and practice: **View session**, `@copilot` in the PR, **Approve and run workflows**
+- [ ] `review` + `audit` → `consolidate` pipeline using `needs` and artifacts
+- [ ] Variant using `strategy.matrix.agent: [sprite-reviewer, auditor]`
+- [ ] MCP: add a `local` server (command/args) and an `http` server (url) to an agent; test `server/tool` vs. `server/*`
+- [ ] 🎓 Local CLI practice: `/plan`, `/delegate`, `/fleet`, `--resume`, `--continue`, `--autopilot`
+- [ ] 🎓 Inspect `~/.copilot/logs/` and `~/.copilot/session-state/<id>/events.jsonl` (new vs. resumed session)
 
-## Fase 3.75 · Guardrails y hooks [D4][D6]
-- [ ] `.github/hooks/policy.json` con `preToolUse` + `matcher: "bash"` que deniegue `git push`
-- [ ] Hook que deniegue `edit`/`create` fuera de `sprites/` para el Herrero
-- [ ] Hook `postToolUse` / `sessionEnd` que registre un resumen de la sesión
-- [ ] Activar secret scanning + push protection, CodeQL y dependency review
-- [ ] 🎓 Provocar fallos a propósito (artifact inexistente, `E401` en npm, push directo bloqueado) y documentar causa raíz + fix en `docs/incidents.md`
+## Phase 3.75 · Guardrails and hooks [D4][D6]
+- [ ] `.github/hooks/policy.json` with `preToolUse` + `matcher: "bash"` that denies `git push`
+- [ ] Hook that denies `edit`/`create` outside `sprites/` for the Blacksmith
+- [ ] `postToolUse` / `sessionEnd` hook that logs a session summary
+- [ ] Enable secret scanning + push protection, CodeQL, and dependency review
+- [ ] 🎓 Intentionally trigger failures (missing artifact, `E401` in npm, blocked direct push) and document the root cause + fix in `docs/incidents.md`
 
-## Fase 4 · Extras
-- [ ] Workflow Crónica semanal en tono épico (`schedule` con cron) [D2]
-- [ ] Valorar preview deploys por PR (`pr-preview-action` / Netlify / Cloudflare)
-- [ ] Valorar backend y cuentas de usuario
-- [ ] Valorar mecánicas más allá de lo estético (combates contra la Procrastinación 👹)
+## Phase 4 · Extras
+- [ ] Weekly Chronicle workflow in an epic tone (`schedule` with cron) [D2]
+- [ ] Consider preview deploys for PRs (`pr-preview-action` / Netlify / Cloudflare)
+- [ ] Consider a backend and user accounts
+- [ ] Consider mechanics beyond cosmetics (battles against Procrastination 👹)
 
-## Fuera del alcance del repo (estudiar en teoría) 📚
-- Políticas MCP de organización/enterprise (registry, allowlist)
-- Audit log de organización (`artifact.destroy`, `actor`, `@timestamp`)
+## Out of scope for this repo (study in theory) 📚
+- Organization/enterprise MCP policies (registry, allowlist)
+- Organization audit log (`artifact.destroy`, `actor`, `@timestamp`)
 - Copilot SDK (`createSession`, `resumeSession`, `onPreToolUse`)
-- Lab guiado: [gh-600-lab-instructions](https://github.com/sameeraman/gh-600-lab-instructions)
+- Guided lab: [gh-600-lab-instructions](https://github.com/sameeraman/gh-600-lab-instructions)
