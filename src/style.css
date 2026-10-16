@@ -1,0 +1,49 @@
+:root {
+  --bg: #0d0d0d;
+  --fg: #00ff66;
+  --muted: #4a8a5a;
+  --line: #1f3f27;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Courier New', Courier, monospace;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.terminal {
+  max-width: 720px;
+  width: 100%;
+}
+
+h1 {
+  letter-spacing: 2px;
+  text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.sprite {
+  background: #060606;
+  border: 1px solid var(--line);
+  padding: 1rem;
+  font-size: 14px;
+  line-height: 1.15;
+  white-space: pre;
+  overflow: auto;
+}

@@ -1,0 +1,30 @@
+{
+  "name": "pomodoro-knight",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Concéntrate. Completa pomodoros. Forja a tu caballero tomate.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate:sprites": "node scripts/validate-sprites.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^22.9.0",
+    "eslint": "^9.13.0",
+    "eslint-config-prettier": "^9.1.0",
+    "globals": "^15.11.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.12.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  }
+}
