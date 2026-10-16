@@ -46,11 +46,7 @@ Objetivo: escribir y **saber leer** cada clave sin mirar la documentación.
 - [ ] Timer Pomodoro 25/5 (start / pause / reset)
 - [ ] Dígitos grandes en ASCII para el timer
 - [ ] Barra de progreso ASCII
-- [ ] Sistema de XP por pomodoro completado
-- [ ] Curva de niveles en `levels.json`
-- [ ] 5 sprites del tomate (uno por nivel) en `.txt`
 - [ ] Persistencia en `localStorage`
-- [ ] Anti-trampas: invalidar pomodoro al cambiar de pestaña o pausar demasiado
 - [ ] Fuente monoespaciada y estilo retro-terminal
 
 ## Fase 1.5 · Personalización de Copilot [D1][D2]
@@ -63,6 +59,10 @@ Objetivo: escribir y **saber leer** cada clave sin mirar la documentación.
 - [ ] Agente `herrero.agent.md` → `tools: [read, search, edit, execute]`
 - [ ] Agente `orchestrator.agent.md` → `tools: [read, search, agent]`
 - [ ] Protección de `main` con ruleset: PR obligatorio + checks de CI requeridos [D6]
+- [ ] Sistema de XP por pomodoro completado
+- [ ] Curva de niveles en `levels.json`
+- [ ] 5 sprites del tomate (uno por nivel) en `.txt`
+- [ ] Anti-trampas: invalidar pomodoro al cambiar de pestaña o pausar demasiado
 
 ## Fase 2 · Primeros agentic workflows (gh-aw)
 > gh-aw **no entra en GH-600**, pero compila a Actions: revisar el `.lock.yml` generado es buena práctica de lectura de YAML.
