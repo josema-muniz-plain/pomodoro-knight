@@ -3,7 +3,14 @@ name: CI
 # CI base de la Fase 0: lint + test + validate:sprites + build.
 # Las mejoras de la Fase 0.5 (permissions, jobs/needs, matrix, concurrency,
 # outputs, artifact, $GITHUB_STEP_SUMMARY, caché de npm...) se añaden a mano.
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request: 
+    branches: #Target branch
+      - main
+  workflow_dispatch:
 
 jobs:
   ci:
