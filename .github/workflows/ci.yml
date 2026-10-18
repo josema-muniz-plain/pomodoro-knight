@@ -1,19 +1,21 @@
 name: CI
 
-# CI base de la Fase 0: lint + test + validate:sprites + build.
-# Las mejoras de la Fase 0.5 (permissions, jobs/needs, matrix, concurrency,
-# outputs, artifact, $GITHUB_STEP_SUMMARY, caché de npm...) se añaden a mano.
+# Fase 0.5: jobs separados lint / test / validate-sprites, y build al final
+# con `needs`. Pendiente: matrix, concurrency, outputs, artifact,
+# $GITHUB_STEP_SUMMARY y caché de npm.
 on:
   push:
     branches:
       - main
   pull_request:
-    branches: #Target branch
-      - main
+    branches: [main] # PR target branch
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  ci:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,6 +25,35 @@ jobs:
       - run: npm ci
       - run: npm run format:check
       - run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
       - run: npm run test:run
+
+  # Este script solo usa módulos node:* (sin dependencias): no hace falta npm ci.
+  validate-sprites:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - run: npm run validate:sprites
+
+  # La puerta final: solo arranca si lint, test y validate-sprites pasaron.
+  build:
+    needs: [lint, test, validate-sprites]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
       - run: npm run build
