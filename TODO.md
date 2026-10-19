@@ -16,9 +16,9 @@
 Goal: writing and **knowing how to read** every key without looking at the documentation.
 
 ### CI (`.github/workflows/ci.yml`)
-- [ ] Triggers: `push` to `main`, `pull_request`, and `workflow_dispatch`
-- [ ] `permissions: contents: read` at workflow level (least privilege)
-- [ ] Separate `lint`, `test`, `validate-sprites`, and `build` jobs, with `needs` so that `build` waits for the others
+- [x] Triggers: `push` to `main`, `pull_request`, and `workflow_dispatch`
+- [x] `permissions: contents: read` at workflow level (least privilege)
+- [x] Separate `lint`, `test`, `validate-sprites`, and `build` jobs, with `needs` so that `build` waits for the others
 - [ ] `strategy.matrix` in `test` with several Node versions (`[20, 22]`) and `fail-fast: false`
 - [ ] `concurrency` with `group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}` and `cancel-in-progress: true`
 - [ ] Job output: `validate-sprites` publishes the number of sprites via `$GITHUB_OUTPUT` → `jobs.<id>.outputs` → `build` reads it with `needs.<id>.outputs.<x>`
