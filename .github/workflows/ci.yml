@@ -1,8 +1,8 @@
 name: CI
 
 # Fase 0.5: jobs separados lint / test / validate-sprites, y build al final
-# con `needs`. Pendiente: matrix, concurrency, outputs, artifact,
-# $GITHUB_STEP_SUMMARY y caché de npm.
+# con `needs`; matrix de Node en test y concurrency. Pendiente: outputs,
+# artifact, $GITHUB_STEP_SUMMARY y caché de npm.
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref }} || ${{ github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -32,9 +32,9 @@ jobs:
 
   test:
     strategy:
+      fail-fast: false
       matrix:
         node-version: [20, 22]
-        fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
