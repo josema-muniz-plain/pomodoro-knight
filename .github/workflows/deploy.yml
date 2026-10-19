@@ -1,0 +1,47 @@
+name: Deploy to GitHub Pages
+
+on:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
+    branches: [main]
+
+permissions:
+  actions: read # necesario para descargar el artifact de otro run (el del CI)
+  contents: read
+  pages: write
+  id-token: write
+
+# En deploy NO cancelamos en curso: dejar acabar un deploy a medias
+# podría dejar Pages en estado inconsistente.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # Solo despliega si la ejecución de CI que disparó este workflow terminó bien.
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    # El environment `github-pages` puede tener un reviewer obligatorio (Fase 0.5 · [D6]):
+    # Settings → Environments → github-pages → Required reviewers.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Descargar el artifact de build
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: artifact
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Subir artifact a Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: artifact
+      - name: Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

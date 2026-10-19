@@ -1,0 +1,94 @@
+name: CI
+
+# Fase 0.5: jobs separados lint / test / validate-sprites, y build al final
+# con `needs`; matrix de Node en test, concurrency, output de validate-sprites,
+# artifact de dist, resumen y caché de npm.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches: [main] # PR target branch
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm run test:run
+
+  # Este script solo usa módulos node:* (sin dependencias): no hace falta npm ci.
+  validate-sprites:
+    runs-on: ubuntu-latest
+    outputs:
+      sprite-count: ${{ steps.count.outputs.sprites }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run validate:sprites
+      - id: count
+        run: echo "sprites=$(ls sprites/*.txt | wc -l)" >> "$GITHUB_OUTPUT"
+      - name: Resumen de sprites
+        run: |
+          {
+            echo "## Sprites validados"
+            echo
+            echo "| Archivo | Nivel | Nombre |"
+            echo "|---|---|---|"
+            for f in sprites/*.txt; do
+              level=$(sed -n 's/^# *level: *//p' "$f" | tr -d '\r')
+              name=$(sed -n 's/^# *name: *//p' "$f" | tr -d '\r')
+              echo "| $(basename "$f") | $level | $name |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # La puerta final: solo arranca si lint, test y validate-sprites pasaron.
+  build:
+    needs: [lint, test, validate-sprites]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: 'echo "Sprites validados: ${{ needs.validate-sprites.outputs.sprite-count }}"'
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error

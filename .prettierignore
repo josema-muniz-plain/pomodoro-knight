@@ -1,0 +1,9 @@
+dist/
+coverage/
+node_modules/
+package-lock.json
+
+# Docs de referencia escritas a mano: no queremos churn de finales de línea
+# ni reformateo que oculte cambios reales.
+README.md
+TODO.md

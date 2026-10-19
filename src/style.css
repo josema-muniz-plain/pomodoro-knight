@@ -1,0 +1,115 @@
+:root {
+  --bg: #0d0d0d;
+  --fg: #00ff66;
+  --muted: #4a8a5a;
+  --line: #1f3f27;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Courier New', Courier, monospace;
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.terminal {
+  max-width: 720px;
+  width: 100%;
+}
+
+h1 {
+  letter-spacing: 2px;
+  text-shadow: 0 0 6px rgba(0, 255, 102, 0.4);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.panel {
+  background: #0a0a0a;
+  border: 1px solid var(--line);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.phase {
+  letter-spacing: 4px;
+  margin: 0 0 0.75rem;
+}
+
+.clock {
+  font-size: 18px;
+  line-height: 1.05;
+  margin: 0 0 0.75rem;
+  white-space: pre;
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.35);
+}
+
+.bar-line {
+  margin: 0 0 1.25rem;
+  letter-spacing: 1px;
+}
+
+.bar {
+  white-space: pre;
+}
+
+.sprite {
+  background: #060606;
+  border: 1px solid var(--line);
+  padding: 1rem;
+  font-size: 14px;
+  line-height: 1.15;
+  white-space: pre;
+  overflow: auto;
+}
+
+.controls {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0 0.75rem;
+}
+
+.controls button {
+  background: #000;
+  border: 1px solid var(--fg);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  padding: 0.5rem 1.1rem;
+  cursor: pointer;
+}
+
+.controls button:hover:not(:disabled) {
+  background: var(--fg);
+  color: #000;
+}
+
+.controls button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+@keyframes flash-blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.flash {
+  animation: flash-blink 0.4s linear 3;
+}
