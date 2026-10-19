@@ -19,9 +19,9 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [x] Triggers: `push` to `main`, `pull_request`, and `workflow_dispatch`
 - [x] `permissions: contents: read` at workflow level (least privilege)
 - [x] Separate `lint`, `test`, `validate-sprites`, and `build` jobs, with `needs` so that `build` waits for the others
-- [ ] `strategy.matrix` in `test` with several Node versions (`[20, 22]`) and `fail-fast: false`
-- [ ] `concurrency` with `group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}` and `cancel-in-progress: true`
-- [ ] Job output: `validate-sprites` publishes the number of sprites via `$GITHUB_OUTPUT` → `jobs.<id>.outputs` → `build` reads it with `needs.<id>.outputs.<x>`
+- [x] `strategy.matrix` in `test` with several Node versions (`[20, 22]`) and `fail-fast: false`
+- [x] `concurrency` with `group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}` and `cancel-in-progress: true`
+- [x] Job output: `validate-sprites` publishes the number of sprites via `$GITHUB_OUTPUT` → `jobs.<id>.outputs` → `build` reads it with `needs.<id>.outputs.<x>`
 - [ ] `build` uploads `dist/` with `actions/upload-artifact` (`retention-days`, `if-no-files-found: error`)
 - [ ] Write a summary to `$GITHUB_STEP_SUMMARY` (table of validated sprites)
 - [ ] Use the npm cache with `actions/setup-node` (`cache: npm`)
