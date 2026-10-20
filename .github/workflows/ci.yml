@@ -19,6 +19,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Contexto del run en el summary: útil para depurar "¿quién/qué lo lanzó?".
+  context:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Contexto del run
+        run: |
+          {
+            echo "## Contexto del run"
+            echo
+            echo "| Contexto | Valor |"
+            echo "|---|---|"
+            echo "| event_name | \`${{ github.event_name }}\` |"
+            echo "| ref | \`${{ github.ref }}\` |"
+            echo "| ref_name | \`${{ github.ref_name }}\` |"
+            echo "| head_ref | \`${{ github.head_ref }}\` |"
+            echo "| base_ref | \`${{ github.base_ref }}\` |"
+            echo "| sha | \`${{ github.sha }}\` |"
+            echo "| actor | \`${{ github.actor }}\` |"
+            echo "| run_id | \`${{ github.run_id }}\` |"
+            echo "| run_attempt | \`${{ github.run_attempt }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
   lint:
     runs-on: ubuntu-latest
     steps:
