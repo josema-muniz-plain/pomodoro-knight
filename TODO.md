@@ -4,13 +4,13 @@
 > Tasks marked with 🎓 exist mainly to learn syntax or exam concepts.
 
 ## Phase 0 · Foundations
-- [ ] Vite + TypeScript scaffold (vanilla)
-- [ ] Configure `base: '/pomodoro-knight/'` in `vite.config.ts`
-- [ ] Set up Vitest with a sample test
-- [ ] Lint + formatting (ESLint + Prettier)
-- [ ] `validate:sprites` script (max dimensions 24×10, printable ASCII only, valid header)
-- [ ] CI workflow: lint + test + validate:sprites + build
-- [ ] Deploy workflow to GitHub Pages (Source: GitHub Actions)
+- [x] Vite + TypeScript scaffold (vanilla)
+- [x] Configure `base: '/pomodoro-knight/'` in `vite.config.ts`
+- [x] Set up Vitest with a sample test
+- [x] Lint + formatting (ESLint + Prettier)
+- [x] `validate:sprites` script (max dimensions 24×10, printable ASCII only, valid header)
+- [x] CI workflow: lint + test + validate:sprites + build
+- [x] Deploy workflow to GitHub Pages (Source: GitHub Actions)
 
 ## Phase 0.5 · Mastering GitHub Actions 🎓 [D2][D4][D5]
 Goal: writing and **knowing how to read** every key without looking at the documentation.
@@ -27,12 +27,12 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [x] Use the npm cache with `actions/setup-node` (`cache: npm`)
 
 ### Deploy (`.github/workflows/deploy.yml`)
-- [ ] `workflow_run` trigger (when CI finishes on `main`) or `push` to `main`
-- [ ] `permissions`: `pages: write`, `id-token: write`, `contents: read`
-- [ ] `environment: github-pages` with output URL (`steps.<id>.outputs.page_url`)
-- [ ] Add a *required reviewer* to the environment to practice manual approvals [D6]
-- [ ] `concurrency: group: pages` with `cancel-in-progress: false` (and understand why it differs from CI's)
-- [ ] Download the build artifact with `actions/download-artifact`
+- [x] `workflow_run` trigger (when CI finishes on `main`) or `push` to `main`
+- [x] `permissions`: `pages: write`, `id-token: write`, `contents: read`
+- [x] `environment: github-pages` with output URL (`steps.<id>.outputs.page_url`)
+- [x] `concurrency: group: pages` with `cancel-in-progress: false` (and understand why it differs from CI's)
+- [x] Download the build artifact with `actions/download-artifact`
+- [x] Naming makes sense? Conventions? (ci.yml and deploy.yml)
 
 ### Lab (`.github/workflows/actions-lab.yml`) 🎓
 - [ ] `workflow_dispatch` with `inputs` of types `string`, `boolean`, and `choice`
@@ -93,6 +93,17 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [ ] `postToolUse` / `sessionEnd` hook logging a session summary
 - [ ] Enable secret scanning + push protection, CodeQL, and dependency review
 - [ ] 🎓 Deliberately cause failures (nonexistent artifact, npm `E401`, blocked direct push) and document root cause + fix in `docs/incidents.md`
+
+## Phase 3.9 · Pipeline improvements 🎓 [D2][D4][D6]
+- [ ] Conditional manual approval: only require a reviewer when the change is "risky" (e.g. changes in `.github/workflows/**`, `package.json`/lockfile, or `vite.config.ts`); docs/sprites-only changes deploy automatically
+  - Idea: a `classify-changes` job (`dorny/paths-filter` or `git diff --name-only`) publishes `risky=true|false` as an output
+  - Two deploy jobs: `deploy-auto` (no environment, `if: risky == 'false'`) and `deploy-reviewed` (environment with *Required reviewers*, `if: risky == 'true'`)
+  - Understand the limitation: required reviewers are a property of the environment, not conditional, hence two environments (e.g. `github-pages` and `github-pages-reviewed`)
+- [ ] Add a *required reviewer* to the environment to practice manual approvals [D6]
+- [ ] Validate the `run_id` in manual deploys (`gh run view`: workflow = CI, conclusion = success, branch = main)
+- [ ] Reusable workflow shared by CI and deploy for lint + test + build
+- [ ] Notify (issue or comment) when a deploy fails
+- [ ] Add `run-name:` to the workflows (e.g. deploy: `Deploy (${{ github.event_name }})`) and optional readable `name:` on jobs, to identify runs better in the Actions UI
 
 ## Phase 4 · Extras
 - [ ] Weekly chronicle workflow in epic tone (`schedule` with cron) [D2]

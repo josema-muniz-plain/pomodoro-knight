@@ -5,6 +5,12 @@ on:
     workflows: ['CI']
     types: [completed]
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'ID del run de CI (exitoso) cuyo artifact "dist" se desplegará'
+        required: true
+        type: string
 
 permissions:
   actions: read # necesario para descargar el artifact de otro run (el del CI)
@@ -20,8 +26,8 @@ concurrency:
 
 jobs:
   deploy:
-    # Solo despliega si la ejecución de CI que disparó este workflow terminó bien.
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # Manual: siempre. Automático: solo si el CI que lo disparó terminó bien.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     # El environment `github-pages` puede tener un reviewer obligatorio (Fase 0.5 · [D6]):
     # Settings → Environments → github-pages → Required reviewers.
@@ -35,7 +41,7 @@ jobs:
           name: dist
           path: artifact
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
       - name: Subir artifact a Pages
