@@ -35,12 +35,7 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [x] Naming makes sense? Conventions? (ci.yml and deploy.yml)
 
 ### Lab (`.github/workflows/actions-lab.yml`) 🎓
-- [ ] `workflow_dispatch` with `inputs` of types `string`, `boolean`, and `choice`
-- [ ] Print contexts: `github.ref`, `ref_name`, `head_ref`, `base_ref`, `sha`, `run_id`, `run_number`, `run_attempt`, `actor`, `triggering_actor`, `workflow`
-- [ ] Compare their values on `push`, `pull_request`, and on a *re-run* (note the results in `docs/actions-contexts.md`)
-- [ ] `actions/checkout` with `ref: ${{ github.head_ref }}` vs. default checkout in a PR
-- [ ] `if:` conditionals with `success()`, `failure()`, `always()`, and `contains()`
-- [ ] Reusable workflow with `on: workflow_call` (inputs + secrets + outputs) and call it from CI
+- [x] Print contexts in the CI step summary: `github.ref`, `ref_name`, `head_ref`, `base_ref`, `sha`, `run_id`, `run_attempt`, `actor`, `event_name`
 
 ## Phase 1 · MVP
 - [ ] Pomodoro timer 25/5 (start / pause / reset)
@@ -103,6 +98,7 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [ ] Validate the `run_id` in manual deploys (`gh run view`: workflow = CI, conclusion = success, branch = main)
 - [ ] Reusable workflow shared by CI and deploy for lint + test + build
 - [ ] Notify (issue or comment) when a deploy fails
+- [ ] `if:` conditionals with `success()`, `failure()`, `always()`, and `contains()` (e.g. `always()` on the sprite summary, `failure()` for notifications)
 - [ ] Add `run-name:` to the workflows (e.g. deploy: `Deploy (${{ github.event_name }})`) and optional readable `name:` on jobs, to identify runs better in the Actions UI
 
 ## Phase 4 · Extras
