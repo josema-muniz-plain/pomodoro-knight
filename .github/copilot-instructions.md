@@ -7,18 +7,21 @@ This document defines the technical stack, available commands, and ASCII art rul
 ## Technology Stack
 
 ### Frontend
+
 - **Language**: TypeScript (strict mode)
 - **Build Tool**: Vite 8.3+
 - **Package Manager**: npm (Node 20+, 22)
 - **Module System**: ES modules (`"type": "module"` in package.json)
 
 ### Testing & Quality
+
 - **Test Framework**: Vitest 5.0+
 - **Test Environment**: Node.js (globals enabled)
 - **Linter**: ESLint 9.13+ with TypeScript support
 - **Formatter**: Prettier 3.3+
 
 ### Environment
+
 - **Deployment**: GitHub Pages via GitHub Actions
 - **Base Path**: `/pomodoro-knight/` (set in `vite.config.ts`)
 - **CI/CD**: GitHub Actions workflows
@@ -30,6 +33,7 @@ This document defines the technical stack, available commands, and ASCII art rul
 All commands are defined in `package.json`:
 
 ### Development
+
 ```bash
 npm run dev          # Start Vite dev server (HMR enabled)
 npm run build        # TypeScript check + Vite bundle (tsc --noEmit && vite build)
@@ -37,6 +41,7 @@ npm run preview      # Preview production build locally
 ```
 
 ### Quality Assurance
+
 ```bash
 npm run test         # Run Vitest in watch mode
 npm run test:run     # Run Vitest once (CI mode)
@@ -47,6 +52,7 @@ npm run validate:sprites  # Validate all sprites (see ASCII Art Rules section)
 ```
 
 ### Typical Workflows
+
 - Before committing: `npm run lint && npm run format && npm run test:run`
 - Sprite creation: Create `.txt` file in `sprites/`, then `npm run validate:sprites`
 - Pre-deployment check: `npm run build && npm run test:run && npm run validate:sprites`
@@ -72,6 +78,7 @@ Each sprite file has two sections:
    - Can have multiple lines and spaces
 
 ### Constraints
+
 - Max width: 24 columns (trailing spaces don't count)
 - Max height: 10 rows
 - Characters: Only printable ASCII (0x20–0x7E, space through tilde)
@@ -80,6 +87,7 @@ Each sprite file has two sections:
 - Empty lines: Trimmed at top/bottom, preserved in the middle
 
 ### Example: sprites/level-1.txt
+
 ```
 # level: 1
 # name: Tomatito
@@ -92,6 +100,7 @@ Each sprite file has two sections:
 ```
 
 Validation:
+
 - Width: 7 columns (widest line)
 - Height: 6 rows
 - All printable ASCII: PASS
@@ -99,6 +108,7 @@ Validation:
 - No duplicate levels: (assuming this is unique)
 
 ### Validation Rules (enforced by validate:sprites)
+
 1. Every sprite file must have `level` and `name` headers
 2. `level` must be a positive integer with no duplicates
 3. Sprite body cannot exceed 24x10
@@ -111,18 +121,21 @@ Validation:
 ## Code Style Conventions
 
 ### TypeScript
+
 - Strict mode enabled (tsconfig.json)
 - No `any` types without justification
 - Use interfaces over types (where applicable)
 - Explicit return types on functions
 
 ### Naming
+
 - Files: kebab-case (e.g., `validate-sprites.mjs`, `level-1.txt`)
 - Classes/Interfaces: PascalCase (e.g., `PomodoroTimer`, `GameState`)
 - Functions/Variables: camelCase (e.g., `getCurrentLevel`, `isValidSprite`)
 - Constants: UPPER_SNAKE_CASE (e.g., `MAX_WIDTH`, `DEFAULT_POMODORO_DURATION`)
 
 ### File Organization
+
 ```
 pomodoro-knight/
   src/                 # TypeScript source
@@ -137,6 +150,7 @@ pomodoro-knight/
 ```
 
 ### Formatting
+
 - Prettier: 2-space indent, single quotes, semicolons, 80-char line wrap (configurable)
 - ESLint: No unused variables, consistent arrow functions, etc.
 - Run `npm run format` before committing

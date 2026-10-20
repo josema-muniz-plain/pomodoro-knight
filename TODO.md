@@ -46,51 +46,16 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 
 ## Phase 1.5 · Copilot customization [D1][D2]
 - [x] `.github/copilot-instructions.md` (stack, commands, ASCII art rules)
-- [ ] `.github/instructions/sprites.instructions.md` with `applyTo: "sprites/**"`
+- [x] `.github/instructions/sprites.instructions.md` with `applyTo: "sprites/**"`
 - [x] Reusable prompt `.github/prompts/review-sprite.prompt.md`
 - [x] Skill `.github/skills/validate-sprite/SKILL.md`
 - [ ] 🎓 Review overlap between the `validate-sprite` skill and the `review-sprite` prompt (and `sprites.instructions.md`); decide what each one owns
 - [x] Agent `sprite-reviewer.agent.md` → `tools: [read, search]` (read-only)
 - [x] Agent `blacksmith.agent.md` → `tools: [read, search, edit, execute]`
 - [x] Agent `orchestrator.agent.md` → `tools: [read, search, agent]`
+
+## Phase 2 · CI/CD and repo governance 🎓 [D2][D4][D6]
 - [ ] Protect `main` with a ruleset: required PR + required CI checks [D6]
-- [ ] XP system per completed pomodoro
-- [ ] Level curve in `levels.json`
-- [ ] 5 tomato sprites (one per level) in `.txt`
-- [ ] Anti-cheat: invalidate the pomodoro when switching tabs or pausing too long
-- [ ] **Pi local setup**: Create `.agents/skills/validate-sprite/SKILL.md` and `~/.pi/agent/prompts/validate-sprite.md` for local pi usage (differs from GitHub Copilot's `.github/instructions/` model)
-
-## Phase 2 · First agentic workflows (gh-aw)
-> gh-aw is **not part of GH-600**, but it compiles to Actions: reviewing the generated `.lock.yml` is good YAML reading practice.
-- [ ] Install gh-aw and configure the engine (secret)
-- [ ] Issue Triage workflow
-- [ ] CI Doctor workflow
-- [ ] Issue templates (bug / content / feature)
-- [ ] 🎓 Read each workflow's `.lock.yml` and identify `permissions`, `safe-outputs` jobs, and `concurrency`
-
-## Phase 3 · Agent-generated content
-- [ ] Blacksmith workflow `/forge` (generates sprite + opens PR)
-- [ ] Sprite Preview workflow (comments the sprite on the PR)
-
-## Phase 3.5 · Native Copilot: CLI, cloud agent, and multi-agent [D2][D3][D5]
-- [ ] Native "blacksmith": workflow with `copilot -p --agent=blacksmith --no-ask-user` and `COPILOT_GITHUB_TOKEN`
-- [ ] Limit tools in CI with `--allow-tool` / `--deny-tool`
-- [ ] `.github/workflows/copilot-setup-steps.yml` (`copilot-setup-steps` job: Node + `npm ci`)
-- [ ] Assign a content issue to the cloud agent and practice: **View session**, `@copilot` on the PR, **Approve and run workflows**
-- [ ] `review` + `audit` → `consolidate` pipeline with `needs` and artifacts
-- [ ] Variant with `strategy.matrix.agent: [sprite-reviewer, auditor]`
-- [ ] MCP: add a `local` server (command/args) and an `http` (url) server to an agent; try `server/tool` vs. `server/*`
-- [ ] 🎓 Local CLI practice: `/plan`, `/delegate`, `/fleet`, `--resume`, `--continue`, `--autopilot`
-- [ ] 🎓 Inspect `~/.copilot/logs/` and `~/.copilot/session-state/<id>/events.jsonl` (new vs. resumed session)
-
-## Phase 3.75 · Guardrails and hooks [D4][D6]
-- [ ] `.github/hooks/policy.json` with `preToolUse` + `matcher: "bash"` denying `git push`
-- [ ] Hook denying `edit`/`create` outside `sprites/` for the Blacksmith
-- [ ] `postToolUse` / `sessionEnd` hook logging a session summary
-- [ ] Enable secret scanning + push protection, CodeQL, and dependency review
-- [ ] 🎓 Deliberately cause failures (nonexistent artifact, npm `E401`, blocked direct push) and document root cause + fix in `docs/incidents.md`
-
-## Phase 3.9 · Pipeline improvements 🎓 [D2][D4][D6]
 - [ ] Conditional manual approval: only require a reviewer when the change is "risky" (e.g. changes in `.github/workflows/**`, `package.json`/lockfile, or `vite.config.ts`); docs/sprites-only changes deploy automatically
   - Idea: a `classify-changes` job (`dorny/paths-filter` or `git diff --name-only`) publishes `risky=true|false` as an output
   - Two deploy jobs: `deploy-auto` (no environment, `if: risky == 'false'`) and `deploy-reviewed` (environment with *Required reviewers*, `if: risky == 'true'`)
@@ -102,9 +67,43 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [ ] `if:` conditionals with `success()`, `failure()`, `always()`, and `contains()` (e.g. `always()` on the sprite summary, `failure()` for notifications)
 - [ ] Add `run-name:` to the workflows (e.g. deploy: `Deploy (${{ github.event_name }})`) and optional readable `name:` on jobs, to identify runs better in the Actions UI
 
-## Phase 4 · Extras
+## Phase 3 · Game features
+- [ ] XP system per completed pomodoro
+- [ ] Level curve in `levels.json`
+- [ ] 5 tomato sprites (one per level) in `.txt`
+- [ ] Anti-cheat: invalidate the pomodoro when switching tabs or pausing too long
+
+## Phase 4 · Agentic workflows (gh-aw) and agent-generated content
+> gh-aw is **not part of GH-600**, but it compiles to Actions: reviewing the generated `.lock.yml` is good YAML reading practice.
+- [ ] Install gh-aw and configure the engine (secret)
+- [ ] Issue Triage workflow
+- [ ] CI Doctor workflow
+- [ ] Issue templates (bug / content / feature)
+- [ ] 🎓 Read each workflow's `.lock.yml` and identify `permissions`, `safe-outputs` jobs, and `concurrency`
+- [ ] Blacksmith workflow `/forge` (generates sprite + opens PR)
+- [ ] Sprite Preview workflow (comments the sprite on the PR)
+
+## Phase 5 · Native Copilot: CLI, cloud agent, and multi-agent [D2][D3][D5]
+- [ ] Native "blacksmith": workflow with `copilot -p --agent=blacksmith --no-ask-user` and `COPILOT_GITHUB_TOKEN`
+- [ ] Limit tools in CI with `--allow-tool` / `--deny-tool`
+- [ ] `.github/workflows/copilot-setup-steps.yml` (`copilot-setup-steps` job: Node + `npm ci`)
+- [ ] Assign a content issue to the cloud agent and practice: **View session**, `@copilot` on the PR, **Approve and run workflows**
+- [ ] `review` + `audit` → `consolidate` pipeline with `needs` and artifacts
+- [ ] Variant with `strategy.matrix.agent: [sprite-reviewer, auditor]`
+- [ ] MCP: add a `local` server (command/args) and an `http` (url) server to an agent; try `server/tool` vs. `server/*`
+- [ ] 🎓 Local CLI practice: `/plan`, `/delegate`, `/fleet`, `--resume`, `--continue`, `--autopilot`
+- [ ] 🎓 Inspect `~/.copilot/logs/` and `~/.copilot/session-state/<id>/events.jsonl` (new vs. resumed session)
+
+## Phase 6 · Guardrails and hooks [D4][D6]
+- [ ] `.github/hooks/policy.json` with `preToolUse` + `matcher: "bash"` denying `git push`
+- [ ] Hook denying `edit`/`create` outside `sprites/` for the Blacksmith
+- [ ] `postToolUse` / `sessionEnd` hook logging a session summary
+- [ ] Enable secret scanning + push protection, CodeQL, and dependency review
+- [ ] 🎓 Deliberately cause failures (nonexistent artifact, npm `E401`, blocked direct push) and document root cause + fix in `docs/incidents.md`
+
+## Phase 7 · Extras
 - [ ] Multi-IDE setup: add `AGENTS.md` at the root (single source for commands/layout/boundaries) and trim `copilot-instructions.md` to Copilot-specific content
-- [ ] Weekly chronicle workflow in epic tone (`schedule` with cron) [D2]
+- [ ] **Pi local setup**: Create `.agents/skills/validate-sprite/SKILL.md` and `~/.pi/agent/prompts/validate-sprite.md` for local pi usage (differs from GitHub Copilot's `.github/instructions/` model)- [ ] Weekly chronicle workflow in epic tone (`schedule` with cron) [D2]
 - [ ] Consider per-PR preview deploys (`pr-preview-action` / Netlify / Cloudflare)
 - [ ] Consider a backend and user accounts
 - [ ] Consider mechanics beyond the cosmetic (battles against Procrastination 👹)

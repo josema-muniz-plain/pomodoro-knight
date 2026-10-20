@@ -1,5 +1,5 @@
 ---
-applyTo: "sprites/**"
+applyTo: 'sprites/**'
 ---
 
 # Sprite Creation & Modification Instructions
@@ -30,6 +30,7 @@ Every sprite file must follow this exact structure:
    - Example: `# name: Tomatito`, `# name: Knight's Guardian`
 
 ### Header Rules
+
 - Headers must be at the very top of the file
 - Format: `# key: value` (space after `#`, space around `:`)
 - No other content (comments, notes) before the body starts
@@ -38,15 +39,18 @@ Every sprite file must follow this exact structure:
 ## ASCII Art Constraints
 
 ### Dimensions
+
 - **Max width**: 24 columns (trailing spaces are ignored)
 - **Max height**: 10 rows
 
 Measure width excluding trailing whitespace. Example:
+
 ```
      .-'''-.          <- 7 columns (widest content)
 ```
 
 ### Character Set
+
 - Only printable ASCII: 0x20–0x7E (space through tilde `~`)
 - Allowed: `! " # $ % & ' ( ) * + , - . / 0-9 : ; < = > ? @ A-Z [ \ ] ^ _ ` a-z { | } ~`
 - NOT allowed:
@@ -56,6 +60,7 @@ Measure width excluding trailing whitespace. Example:
   - High-ASCII or extended ASCII
 
 ### Line Handling
+
 - Empty lines at the start and end are trimmed automatically
 - Empty lines in the middle of the sprite are preserved
 - Trailing spaces on a line do not contribute to width
@@ -85,6 +90,7 @@ npm run validate:sprites
 ```
 
 This will:
+
 1. Check header integrity (level, name)
 2. Verify dimensions (24x10 max)
 3. Confirm all characters are printable ASCII
@@ -96,6 +102,7 @@ If validation fails, do not commit. Fix the errors and run again.
 ## Examples
 
 ### Valid Sprite (level-1.txt)
+
 ```
 # level: 1
 # name: Tomatito
@@ -106,6 +113,7 @@ If validation fails, do not commit. Fix the errors and run again.
     \  '-'  /
      '-----'
 ```
+
 - Level: 1 (unique)
 - Name: Tomatito (non-empty)
 - Width: 7 (line `     .-'''-.`)
@@ -116,35 +124,43 @@ If validation fails, do not commit. Fix the errors and run again.
 ### Invalid Examples
 
 ❌ **Missing level header**
+
 ```
 # name: Broken
   /\_/\
 ```
+
 Error: falta la cabecera "level" (missing "level" header)
 
 ❌ **Duplicate level**
 If another file already has `# level: 2`:
+
 ```
 # level: 2
 # name: Other
   ...
 ```
+
 Error: nivel duplicado: 2 (duplicate level)
 
 ❌ **Too wide**
+
 ```
 # level: 3
 # name: BigSprite
 abcdefghijklmnopqrstuvwxyz
 ```
+
 Error: demasiado ancho: 26 > 24 (too wide)
 
 ❌ **Non-ASCII character**
+
 ```
 # level: 4
 # name: Emoji Sprite
   😀
 ```
+
 Error: carácter no imprimible (ASCII) (non-printable character)
 
 ## Best Practices
@@ -159,11 +175,13 @@ Error: carácter no imprimible (ASCII) (non-printable character)
 ## Common Patterns
 
 ### Centering a 7-character sprite on 24 columns
+
 ```
        <-- 8 spaces (24 - 7) / 2 = 8.5 ≈ 8
 ```
 
 ### Multi-line sprite with consistent alignment
+
 ```
 # level: 2
 # name: Progressive Knight
