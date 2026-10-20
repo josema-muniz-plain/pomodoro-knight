@@ -38,26 +38,27 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [x] Print contexts in the CI step summary: `github.ref`, `ref_name`, `head_ref`, `base_ref`, `sha`, `run_id`, `run_attempt`, `actor`, `event_name`
 
 ## Phase 1 · MVP
-- [ ] Pomodoro timer 25/5 (start / pause / reset)
-- [ ] Large ASCII digits for the timer
-- [ ] ASCII progress bar
-- [ ] `localStorage` persistence
-- [ ] Monospaced font and retro-terminal style
+- [x] Pomodoro timer 25/5 (start / pause / reset)
+- [x] Large ASCII digits for the timer
+- [x] ASCII progress bar
+- [x] `localStorage` persistence
+- [x] Monospaced font and retro-terminal style
 
 ## Phase 1.5 · Copilot customization [D1][D2]
-- [ ] `.github/copilot-instructions.md` (stack, commands, ASCII art rules)
+- [x] `.github/copilot-instructions.md` (stack, commands, ASCII art rules)
 - [ ] `.github/instructions/sprites.instructions.md` with `applyTo: "sprites/**"`
-- [ ] `AGENTS.md` at the root
-- [ ] Reusable prompt `.github/prompts/review-sprite.prompt.md`
-- [ ] Skill `.github/skills/validate-sprite/SKILL.md`
-- [ ] Agent `sprite-reviewer.agent.md` → `tools: [read, search]` (read-only)
-- [ ] Agent `herrero.agent.md` → `tools: [read, search, edit, execute]`
-- [ ] Agent `orchestrator.agent.md` → `tools: [read, search, agent]`
+- [x] Reusable prompt `.github/prompts/review-sprite.prompt.md`
+- [x] Skill `.github/skills/validate-sprite/SKILL.md`
+- [ ] 🎓 Review overlap between the `validate-sprite` skill and the `review-sprite` prompt (and `sprites.instructions.md`); decide what each one owns
+- [x] Agent `sprite-reviewer.agent.md` → `tools: [read, search]` (read-only)
+- [x] Agent `blacksmith.agent.md` → `tools: [read, search, edit, execute]`
+- [x] Agent `orchestrator.agent.md` → `tools: [read, search, agent]`
 - [ ] Protect `main` with a ruleset: required PR + required CI checks [D6]
 - [ ] XP system per completed pomodoro
 - [ ] Level curve in `levels.json`
 - [ ] 5 tomato sprites (one per level) in `.txt`
 - [ ] Anti-cheat: invalidate the pomodoro when switching tabs or pausing too long
+- [ ] **Pi local setup**: Create `.agents/skills/validate-sprite/SKILL.md` and `~/.pi/agent/prompts/validate-sprite.md` for local pi usage (differs from GitHub Copilot's `.github/instructions/` model)
 
 ## Phase 2 · First agentic workflows (gh-aw)
 > gh-aw is **not part of GH-600**, but it compiles to Actions: reviewing the generated `.lock.yml` is good YAML reading practice.
@@ -72,7 +73,7 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [ ] Sprite Preview workflow (comments the sprite on the PR)
 
 ## Phase 3.5 · Native Copilot: CLI, cloud agent, and multi-agent [D2][D3][D5]
-- [ ] Native "blacksmith": workflow with `copilot -p --agent=herrero --no-ask-user` and `COPILOT_GITHUB_TOKEN`
+- [ ] Native "blacksmith": workflow with `copilot -p --agent=blacksmith --no-ask-user` and `COPILOT_GITHUB_TOKEN`
 - [ ] Limit tools in CI with `--allow-tool` / `--deny-tool`
 - [ ] `.github/workflows/copilot-setup-steps.yml` (`copilot-setup-steps` job: Node + `npm ci`)
 - [ ] Assign a content issue to the cloud agent and practice: **View session**, `@copilot` on the PR, **Approve and run workflows**
@@ -102,6 +103,7 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [ ] Add `run-name:` to the workflows (e.g. deploy: `Deploy (${{ github.event_name }})`) and optional readable `name:` on jobs, to identify runs better in the Actions UI
 
 ## Phase 4 · Extras
+- [ ] Multi-IDE setup: add `AGENTS.md` at the root (single source for commands/layout/boundaries) and trim `copilot-instructions.md` to Copilot-specific content
 - [ ] Weekly chronicle workflow in epic tone (`schedule` with cron) [D2]
 - [ ] Consider per-PR preview deploys (`pr-preview-action` / Netlify / Cloudflare)
 - [ ] Consider a backend and user accounts
