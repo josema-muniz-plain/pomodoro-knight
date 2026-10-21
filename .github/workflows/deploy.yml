@@ -1,4 +1,5 @@
 name: Deploy to GitHub Pages
+run-name: Deploy (${{ github.event_name }})
 
 on:
   workflow_run:
@@ -8,46 +9,47 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: 'ID del run de CI (exitoso) cuyo artifact "dist" se desplegará'
+        description: 'ID of the successful CI run whose "dist" artifact will be deployed'
         required: true
         type: string
 
 permissions:
-  actions: read # necesario para descargar el artifact de otro run (el del CI)
+  actions: read # required to download an artifact from another run (the CI run)
   contents: read
   pages: write
   id-token: write
 
-# En deploy NO cancelamos en curso: dejar acabar un deploy a medias
-# podría dejar Pages en estado inconsistente.
+# Do NOT cancel in-progress deployments: interrupting one halfway through could
+# leave Pages in an inconsistent state.
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
   deploy:
-    # Manual: siempre. Automático: solo si el CI que lo disparó terminó bien.
+    name: Deploy GitHub Pages
+    # Manual: always. Automatic: only when the triggering CI run succeeded.
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    # El environment `github-pages` puede tener un reviewer obligatorio (Fase 0.5 · [D6]):
+    # The `github-pages` environment can have a required reviewer (Phase 0.5 · [D6]):
     # Settings → Environments → github-pages → Required reviewers.
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Descargar el artifact de build
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: dist
           path: artifact
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
-      - name: Configurar GitHub Pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Subir artifact a Pages
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: artifact
-      - name: Desplegar en GitHub Pages
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

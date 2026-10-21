@@ -49,17 +49,15 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [x] `.github/instructions/sprites.instructions.md` with `applyTo: "sprites/**"`
 - [x] Reusable prompt `.github/prompts/review-sprite.prompt.md`
 - [x] Skill `.github/skills/validate-sprite/SKILL.md`
-- [ ] 🎓 Review overlap between the `validate-sprite` skill and the `review-sprite` prompt (and `sprites.instructions.md`); decide what each one owns
 - [x] Agent `sprite-reviewer.agent.md` → `tools: [read, search]` (read-only)
 - [x] Agent `blacksmith.agent.md` → `tools: [read, search, edit, execute]`
 - [x] Agent `orchestrator.agent.md` → `tools: [read, search, agent]`
-- [ ] Multi-IDE setup: add `AGENTS.md` at the root (single source for commands/layout/boundaries) and trim `copilot-instructions.md` to Copilot-specific content [D2]
 
 > **Order:** phases 2–4 cover the GH-600 exam (CI/CD, native Copilot, guardrails). Phases 5–7 are development and polish, to do afterwards.
 
 ## Phase 2 · CI/CD and repo governance 🎓 [D2][D4][D6]
 - [x] Protect `main` with a ruleset: required PR + required CI checks [D6]
-- [ ] Add `run-name:` to the workflows (e.g. deploy: `Deploy (${{ github.event_name }})`) and optional readable `name:` on jobs, to identify runs better in the Actions UI
+- [x] Add `run-name:` to the workflows (e.g. deploy: `Deploy (${{ github.event_name }})`) and optional readable `name:` on jobs, to identify runs better in the Actions UI
 - [ ] `if:` conditionals with `success()`, `failure()`, `always()`, and `contains()` (e.g. `always()` on the sprite summary, `failure()` for notifications)
 - [ ] Notify (issue or comment) when a deploy fails
 - [ ] Reusable workflow shared by CI and deploy for lint + test + build
@@ -123,6 +121,10 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [ ] Consider per-PR preview deploys (`pr-preview-action` / Netlify / Cloudflare)
 - [ ] Consider a backend and user accounts
 - [ ] Consider mechanics beyond the cosmetic (battles against Procrastination 👹)
+
+## Phase 8 · Loose ends from completed phases
+- [ ] 🎓 Review overlap between the `validate-sprite` skill and the `review-sprite` prompt (and `sprites.instructions.md`); decide what each one owns
+- [ ] Multi-IDE setup: add `AGENTS.md` at the root (single source for commands/layout/boundaries) and trim `copilot-instructions.md` to Copilot-specific content [D2]
 
 ## Out of repo scope (study as theory) 📚
 - Organization/enterprise MCP policies (registry, allowlist)
