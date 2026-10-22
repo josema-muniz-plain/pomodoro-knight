@@ -1,5 +1,5 @@
-name: Copilot CLI
-run-name: Copilot CLI (${{ github.event_name }})
+name: Copilot Coding Agent CLI
+run-name: Copilot Coding Agent CLI (${{ github.event_name }})
 
 # V1: manually run the repository's coding agent through Copilot CLI. This
 # first iteration has read-only repository permissions and does not persist
@@ -36,7 +36,21 @@ jobs:
         run: npm install --global @github/copilot
 
       - name: Run coding agent
+        # The agent may edit the temporary checkout and run npm validation, but
+        # it cannot use Git or destructive shell commands. A later workflow
+        # step—not the agent—will own commits and PR creation.
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           TASK: ${{ inputs.task }}
-        run: copilot -p "$TASK" --agent=coding-agent --no-ask-user
+        run: |
+          copilot -p "$TASK" \
+            --agent=coding-agent \
+            --model gpt-6-luna \
+            --no-ask-user \
+            --disallow-temp-dir \
+            --secret-env-vars COPILOT_GITHUB_TOKEN \
+            --allow-tool 'write' \
+            --allow-tool 'shell(npm:*)' \
+            --deny-tool 'shell(git:*)' \
+            --deny-tool 'shell(rm)' \
+            --deny-tool 'write(.env)'
