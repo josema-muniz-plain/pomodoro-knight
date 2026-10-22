@@ -30,29 +30,12 @@ jobs:
     name: Deploy GitHub Pages
     # Manual: always. Automatic: only when the triggering CI run succeeded.
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-latest
-    # The `github-pages` environment can have a required reviewer (Phase 0.5 · [D6]):
-    # Settings → Environments → github-pages → Required reviewers.
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: artifact
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: artifact
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+    uses: ./.github/workflows/deploy-pages.yml
+    with:
+      artifact_run_id: ${{ github.event.workflow_run.id || inputs.run_id }}
+      # The environment can enforce required reviewers (Phase 0.5 · [D6]):
+      # Settings → Environments → github-pages → Required reviewers.
+      environment_name: github-pages
 
   notify-deploy-failure:
     name: Create deployment failure issue
