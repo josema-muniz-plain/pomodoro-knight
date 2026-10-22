@@ -1,4 +1,5 @@
 name: Deploy to GitHub Pages
+run-name: Deploy (${{ github.event_name }})
 
 on:
   workflow_run:
@@ -8,46 +9,63 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: 'ID del run de CI (exitoso) cuyo artifact "dist" se desplegará'
+        description: 'ID of the successful CI run whose "dist" artifact will be deployed'
         required: true
         type: string
 
 permissions:
-  actions: read # necesario para descargar el artifact de otro run (el del CI)
+  actions: read # required to download an artifact from another run (the CI run)
   contents: read
   pages: write
   id-token: write
 
-# En deploy NO cancelamos en curso: dejar acabar un deploy a medias
-# podría dejar Pages en estado inconsistente.
+# Do NOT cancel in-progress deployments: interrupting one halfway through could
+# leave Pages in an inconsistent state.
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
   deploy:
-    # Manual: siempre. Automático: solo si el CI que lo disparó terminó bien.
+    name: Deploy GitHub Pages
+    # Manual: always. Automatic: only when the triggering CI run succeeded.
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/deploy-pages.yml
+    with:
+      artifact_run_id: ${{ github.event.workflow_run.id || inputs.run_id }}
+      # The environment can enforce required reviewers (Phase 0.5 · [D6]):
+      # Settings → Environments → github-pages → Required reviewers.
+      environment_name: github-pages
+
+  notify-deploy-failure:
+    name: Create deployment failure issue
+    needs: deploy
+    # Run only when the deployment job itself fails; a skipped deployment (for
+    # example, after a failed CI run) does not create an issue.
+    if: ${{ failure() }}
     runs-on: ubuntu-latest
-    # El environment `github-pages` puede tener un reviewer obligatorio (Fase 0.5 · [D6]):
-    # Settings → Environments → github-pages → Required reviewers.
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      issues: write
     steps:
-      - name: Descargar el artifact de build
-        uses: actions/download-artifact@v4
+      - name: Create issue
+        uses: actions/github-script@v7
         with:
-          name: dist
-          path: artifact
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
-      - name: Configurar GitHub Pages
-        uses: actions/configure-pages@v5
-      - name: Subir artifact a Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: artifact
-      - name: Desplegar en GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const source = context.eventName === 'workflow_run'
+              ? `CI run [${context.payload.workflow_run.id}](${context.payload.workflow_run.html_url})`
+              : 'a manual dispatch';
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'GitHub Pages deployment failed',
+              body: [
+                'A GitHub Pages deployment failed.',
+                '',
+                `- Triggered by: ${source}`,
+                `- Failed deployment run: [${context.runId}](${runUrl})`,
+                `- Event: \`${context.eventName}\``,
+              ].join('\n'),
+            });

@@ -1,8 +1,9 @@
 name: CI
+run-name: CI (${{ github.event_name }})
 
-# Fase 0.5: jobs separados lint / test / validate-sprites, y build al final
-# con `needs`; matrix de Node en test, concurrency, output de validate-sprites,
-# artifact de dist, resumen y caché de npm.
+# Phase 0.5: separate lint, test, validate-sprites, and final build jobs using
+# `needs`; test Node matrix, concurrency, validate-sprites output, dist artifact,
+# summary, and npm cache.
 on:
   push:
     branches:
@@ -19,16 +20,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Contexto del run en el summary: útil para depurar "¿quién/qué lo lanzó?".
+  # Run context in the summary: useful for debugging who/what triggered it.
   context:
+    name: Run context
     runs-on: ubuntu-latest
     steps:
-      - name: Contexto del run
+      - name: Run context
         run: |
           {
-            echo "## Contexto del run"
+            echo "## Run context"
             echo
-            echo "| Contexto | Valor |"
+            echo "| Context | Value |"
             echo "|---|---|"
             echo "| event_name | \`${{ github.event_name }}\` |"
             echo "| ref | \`${{ github.ref }}\` |"
@@ -40,8 +42,14 @@ jobs:
             echo "| run_id | \`${{ github.run_id }}\` |"
             echo "| run_attempt | \`${{ github.run_attempt }}\` |"
           } >> "$GITHUB_STEP_SUMMARY"
+      # `contains()` identifies runs triggered by code changes, as opposed to
+      # manual (`workflow_dispatch`) runs.
+      - name: Identify code-change trigger
+        if: ${{ contains(fromJSON('["push", "pull_request"]'), github.event_name) }}
+        run: echo "This run was triggered by a code change." >> "$GITHUB_STEP_SUMMARY"
 
   lint:
+    name: Lint and format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +62,7 @@ jobs:
       - run: npm run lint
 
   test:
+    name: Test (Node ${{ matrix.node-version }})
     strategy:
       fail-fast: false
       matrix:
@@ -68,8 +77,9 @@ jobs:
       - run: npm ci
       - run: npm run test:run
 
-  # Este script solo usa módulos node:* (sin dependencias): no hace falta npm ci.
+  # This script only uses node:* modules (no dependencies), so npm ci is unnecessary.
   validate-sprites:
+    name: Validate ASCII sprites
     runs-on: ubuntu-latest
     outputs:
       sprite-count: ${{ steps.count.outputs.sprites }}
@@ -81,12 +91,14 @@ jobs:
       - run: npm run validate:sprites
       - id: count
         run: echo "sprites=$(ls sprites/*.txt | wc -l)" >> "$GITHUB_OUTPUT"
-      - name: Resumen de sprites
+      # `always()` preserves the summary even if the preceding validator fails.
+      - name: Sprite summary
+        if: ${{ always() }}
         run: |
           {
-            echo "## Sprites validados"
+            echo "## Validated sprites"
             echo
-            echo "| Archivo | Nivel | Nombre |"
+            echo "| File | Level | Name |"
             echo "|---|---|---|"
             for f in sprites/*.txt; do
               level=$(sed -n 's/^# *level: *//p' "$f" | tr -d '\r')
@@ -95,8 +107,9 @@ jobs:
             done
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # La puerta final: solo arranca si lint, test y validate-sprites pasaron.
+  # The final gate: runs only after lint, test, and validate-sprites succeed.
   build:
+    name: Build production bundle
     needs: [lint, test, validate-sprites]
     runs-on: ubuntu-latest
     steps:
@@ -106,9 +119,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: 'echo "Sprites validados: ${{ needs.validate-sprites.outputs.sprite-count }}"'
+      - run: 'echo "Validated sprites: ${{ needs.validate-sprites.outputs.sprite-count }}"'
       - run: npm run build
-      - uses: actions/upload-artifact@v4
+      # Redundant with the default behavior, but makes it explicit that we only
+      # publish the artifact after the preceding steps succeed.
+      - name: Upload build artifact
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/

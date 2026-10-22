@@ -49,29 +49,21 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [x] `.github/instructions/sprites.instructions.md` with `applyTo: "sprites/**"`
 - [x] Reusable prompt `.github/prompts/review-sprite.prompt.md`
 - [x] Skill `.github/skills/validate-sprite/SKILL.md`
-- [ ] 🎓 Review overlap between the `validate-sprite` skill and the `review-sprite` prompt (and `sprites.instructions.md`); decide what each one owns
 - [x] Agent `sprite-reviewer.agent.md` → `tools: [read, search]` (read-only)
 - [x] Agent `blacksmith.agent.md` → `tools: [read, search, edit, execute]`
 - [x] Agent `orchestrator.agent.md` → `tools: [read, search, agent]`
-- [ ] Multi-IDE setup: add `AGENTS.md` at the root (single source for commands/layout/boundaries) and trim `copilot-instructions.md` to Copilot-specific content [D2]
 
 > **Order:** phases 2–4 cover the GH-600 exam (CI/CD, native Copilot, guardrails). Phases 5–7 are development and polish, to do afterwards.
 
 ## Phase 2 · CI/CD and repo governance 🎓 [D2][D4][D6]
 - [x] Protect `main` with a ruleset: required PR + required CI checks [D6]
-- [ ] Add `run-name:` to the workflows (e.g. deploy: `Deploy (${{ github.event_name }})`) and optional readable `name:` on jobs, to identify runs better in the Actions UI
-- [ ] `if:` conditionals with `success()`, `failure()`, `always()`, and `contains()` (e.g. `always()` on the sprite summary, `failure()` for notifications)
-- [ ] Notify (issue or comment) when a deploy fails
-- [ ] Reusable workflow shared by CI and deploy for lint + test + build
-- [ ] Validate the `run_id` in manual deploys (`gh run view`: workflow = CI, conclusion = success, branch = main)
-- [ ] Add a *required reviewer* to the environment to practice manual approvals [D6]
-- [ ] Conditional manual approval: only require a reviewer when the change is "risky" (e.g. changes in `.github/workflows/**`, `package.json`/lockfile, or `vite.config.ts`); docs/sprites-only changes deploy automatically
-  - Idea: a `classify-changes` job (`dorny/paths-filter` or `git diff --name-only`) publishes `risky=true|false` as an output
-  - Two deploy jobs: `deploy-auto` (no environment, `if: risky == 'false'`) and `deploy-reviewed` (environment with *Required reviewers*, `if: risky == 'true'`)
-  - Understand the limitation: required reviewers are a property of the environment, not conditional, hence two environments (e.g. `github-pages` and `github-pages-reviewed`)
-- [ ] Enable secret scanning + push protection, CodeQL, and dependency review [D6]
-- [ ] 🎓 Concurrency with `queue: max` (e.g. a serialized job) and understand why it must not be combined with `cancel-in-progress: true` [D5]
-- [ ] 🎓 Extend the actions lab: `github.run_number`, `github.workflow`, `github.triggering_actor` (vs. `actor` on a re-run), and `actions/checkout` with `ref: ${{ github.head_ref }}` on `pull_request`
+- [x] Add `run-name:` to the workflows (e.g. deploy: `Deploy (${{ github.event_name }})`) and optional readable `name:` on jobs, to identify runs better in the Actions UI
+- [x] `if:` conditionals with `success()`, `failure()`, `always()`, and `contains()` (e.g. `always()` on the sprite summary, `failure()` for notifications)
+- [x] Notify (issue or comment) when a deploy fails
+- [x] Extract GitHub Pages artifact publication into a reusable `workflow_call` workflow, called by `deploy.yml` and ready for rollback/staging callers
+- [x] Add a *required reviewer* to the environment to practice manual approvals [D6]
+- [x] Enable secret scanning + push protection, CodeQL, and dependency review [D6]
+- [x] 🎓 Concurrency with `queue: max` (e.g. a serialized job) and understand why it must not be combined with `cancel-in-progress: true` [D5]
 
 ## Phase 3 · Native Copilot: CLI, cloud agent, and multi-agent [D2][D3][D5]
 - [ ] `.github/workflows/copilot-setup-steps.yml` (`copilot-setup-steps` job: Node + `npm ci`)
@@ -82,6 +74,11 @@ Goal: writing and **knowing how to read** every key without looking at the docum
   - Stalled-agent recovery: unassign + reassign the issue, repeat the comment, confirm that the commenter has write access
 - [ ] 🎓 Agent frontmatter: `description` is required (`name` is not), omitting `tools` = all tools, `tools: []` = none; try `model`, `target`, `disable-model-invocation`, `user-invocable`
 - [ ] Agent `auditor.agent.md` (read-only; prerequisite for the pipeline)
+- [ ] Agent-assisted deployment risk assessment and approval [D2][D3][D6]
+  - Deterministic `classify-changes` job (`dorny/paths-filter` or `git diff --name-only`) publishes `risky=true|false` for the deployment gate
+  - The auditor agent produces a human-readable risk summary for the reviewer; it advises but never decides the gate
+  - Two deploy jobs call `deploy-pages.yml`: `deploy-auto` uses an unprotected environment when `risky == 'false'`; `deploy-reviewed` uses an environment with *Required reviewers* when `risky == 'true'`
+  - Understand the limitation: required reviewers belong to an environment, not a conditional; use two environments (e.g. `github-pages` and `github-pages-reviewed`)
 - [ ] `review` + `audit` → `consolidate` pipeline with `needs` and artifacts
 - [ ] Variant with `strategy.matrix.agent: [sprite-reviewer, auditor]`
 - [ ] MCP: add a `local` server (command/args) and an `http` (url) server to an agent; try `server/tool` vs. `server/*`
@@ -120,9 +117,14 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 
 ## Phase 7 · Extras
 - [ ] **Pi local setup**: Create `.agents/skills/validate-sprite/SKILL.md` and `~/.pi/agent/prompts/validate-sprite.md` for local pi usage (differs from GitHub Copilot's `.github/instructions/` model)
+- [ ] Validate the `run_id` in manual deploys (`gh run view`: workflow = CI, conclusion = success, branch = main)
 - [ ] Consider per-PR preview deploys (`pr-preview-action` / Netlify / Cloudflare)
 - [ ] Consider a backend and user accounts
 - [ ] Consider mechanics beyond the cosmetic (battles against Procrastination 👹)
+
+## Phase 8 · Loose ends from completed phases
+- [ ] 🎓 Review overlap between the `validate-sprite` skill and the `review-sprite` prompt (and `sprites.instructions.md`); decide what each one owns
+- [ ] Multi-IDE setup: add `AGENTS.md` at the root (single source for commands/layout/boundaries) and trim `copilot-instructions.md` to Copilot-specific content [D2]
 
 ## Out of repo scope (study as theory) 📚
 - Organization/enterprise MCP policies (registry, allowlist)
