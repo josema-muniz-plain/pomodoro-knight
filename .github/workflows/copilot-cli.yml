@@ -1,0 +1,42 @@
+name: Copilot CLI
+run-name: Copilot CLI (${{ github.event_name }})
+
+# V1: manually run the repository's coding agent through Copilot CLI. This
+# first iteration has read-only repository permissions and does not persist
+# changes made in the runner.
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: Task for the coding agent
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  coding-agent:
+    name: Run coding agent
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Install GitHub Copilot CLI
+        run: npm install --global @github/copilot
+
+      - name: Run coding agent
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          TASK: ${{ inputs.task }}
+        run: copilot -p "$TASK" --agent=coding-agent --no-ask-user
