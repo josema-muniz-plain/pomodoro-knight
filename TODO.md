@@ -50,7 +50,7 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [x] Reusable prompt `.github/prompts/review-sprite.prompt.md`
 - [x] Skill `.github/skills/validate-sprite/SKILL.md`
 - [x] Agent `sprite-reviewer.agent.md` → `tools: [read, search]` (read-only)
-- [x] Agent `blacksmith.agent.md` → `tools: [read, search, edit, execute]`
+- [x] Agent `blacksmith.agent.md` → `tools: [read, search, edit, execute]` (specialized in ASCII sprites)
 - [x] Agent `orchestrator.agent.md` → `tools: [read, search, agent]`
 
 > **Order:** phases 2–4 cover the GH-600 exam (CI/CD, native Copilot, guardrails). Phases 5–7 are development and polish, to do afterwards.
@@ -66,14 +66,29 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [x] 🎓 Concurrency with `queue: max` (e.g. a serialized job) and understand why it must not be combined with `cancel-in-progress: true` [D5]
 
 ## Phase 3 · Native Copilot: CLI, cloud agent, and multi-agent [D2][D3][D5]
-- [ ] `.github/workflows/copilot-setup-steps.yml` (`copilot-setup-steps` job: Node + `npm ci`)
-- [ ] Native "blacksmith": workflow with `copilot -p --agent=blacksmith --no-ask-user` and `COPILOT_GITHUB_TOKEN`
+
+### V1 · Copilot CLI in Actions and local practice (first)
+- [ ] Native `coding-agent`: workflow with `copilot -p --agent=coding-agent --no-ask-user` and `COPILOT_GITHUB_TOKEN`
 - [ ] Limit tools in CI with `--allow-tool` / `--deny-tool`
+- [ ] Persist a CLI-agent change as a reviewable PR (dedicated branch; workflow-owned commit/push and PR creation; never push or merge `main`)
+- [ ] Weekly chronicle workflow in epic tone (`schedule` with cron; Copilot CLI in Actions) [D2]
+- [ ] 🎓 Local CLI practice: `/plan`, `/delegate`, `/fleet`, `--resume`, `--continue`, `--autopilot`
+  - Also: `/session`, `/ide`, `/mcp`, `/review`, `/pr`, `--available-tools`, `--output-format=json`, `--disable-builtin-mcps`
+- [ ] 🎓 Inspect `~/.copilot/logs/` and `~/.copilot/session-state/<id>/events.jsonl` (new vs. resumed session)
+
+### V2 · GitHub-managed cloud agent (after V1)
+- [x] `.github/workflows/copilot-setup-steps.yml` (`copilot-setup-steps` job: Node + `npm ci`)
 - [ ] Issue templates (bug / content / feature)
 - [ ] Assign a content issue to the cloud agent and practice: **View session**, `@copilot` on the PR, **Approve and run workflows**
   - Stalled-agent recovery: unassign + reassign the issue, repeat the comment, confirm that the commenter has write access
+- [ ] Configure cloud-agent MCP secrets with the `COPILOT_MCP_` prefix (Agents secrets, not Actions secrets)
+
+### Common · Agent definition, MCP, and multi-agent workflows
 - [ ] 🎓 Agent frontmatter: `description` is required (`name` is not), omitting `tools` = all tools, `tools: []` = none; try `model`, `target`, `disable-model-invocation`, `user-invocable`
 - [ ] Agent `auditor.agent.md` (read-only; prerequisite for the pipeline)
+- [ ] MCP: add a `local` server (command/args) and an `http` (url) server to an agent; try `server/tool` vs. `server/*`
+  - Same servers in JSON (`.vscode/mcp.json` → `mcpServers`) vs. agent YAML (`mcp-servers`); adapt `inputs`/`envFile` → `env`
+  - Know when to use `sse` (top-level `url`, legacy endpoint) and that a URL inside `args` (`mcp-remote`) is still `local`
 - [ ] Agent-assisted deployment risk assessment and approval [D2][D3][D6]
   - Deterministic `classify-changes` job (`dorny/paths-filter` or `git diff --name-only`) publishes `risky=true|false` for the deployment gate
   - The auditor agent produces a human-readable risk summary for the reviewer; it advises but never decides the gate
@@ -81,14 +96,6 @@ Goal: writing and **knowing how to read** every key without looking at the docum
   - Understand the limitation: required reviewers belong to an environment, not a conditional; use two environments (e.g. `github-pages` and `github-pages-reviewed`)
 - [ ] `review` + `audit` → `consolidate` pipeline with `needs` and artifacts
 - [ ] Variant with `strategy.matrix.agent: [sprite-reviewer, auditor]`
-- [ ] MCP: add a `local` server (command/args) and an `http` (url) server to an agent; try `server/tool` vs. `server/*`
-  - Same servers in JSON (`.vscode/mcp.json` → `mcpServers`) vs. agent YAML (`mcp-servers`); adapt `inputs`/`envFile` → `env`
-  - Know when to use `sse` (top-level `url`, legacy endpoint) and that a URL inside `args` (`mcp-remote`) is still `local`
-  - Secrets for the cloud agent must start with `COPILOT_MCP_` (Agents secrets, not Actions secrets)
-- [ ] Weekly chronicle workflow in epic tone (`schedule` with cron) [D2]
-- [ ] 🎓 Local CLI practice: `/plan`, `/delegate`, `/fleet`, `--resume`, `--continue`, `--autopilot`
-  - Also: `/session`, `/ide`, `/mcp`, `/review`, `/pr`, `--available-tools`, `--output-format=json`, `--disable-builtin-mcps`
-- [ ] 🎓 Inspect `~/.copilot/logs/` and `~/.copilot/session-state/<id>/events.jsonl` (new vs. resumed session)
 
 ## Phase 4 · Guardrails and hooks [D4][D6]
 - [ ] `.github/hooks/policy.json` with `preToolUse` + `matcher: "bash"` denying `git push`

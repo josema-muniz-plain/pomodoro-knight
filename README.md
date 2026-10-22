@@ -83,7 +83,7 @@ Target `.github/` structure:
 ├── instructions/sprites.instructions.md
 ├── prompts/review-sprite.prompt.md
 ├── skills/validate-sprite/SKILL.md
-├── agents/{sprite-reviewer,blacksmith,orchestrator}.agent.md
+├── agents/{coding-agent,blacksmith,sprite-reviewer,orchestrator}.agent.md
 ├── hooks/policy.json
 └── workflows/
     ├── ci.yml                    # needs, matrix, outputs, artifacts, concurrency
