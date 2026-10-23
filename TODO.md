@@ -71,10 +71,10 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [x] Native `coding-agent`: workflow with `copilot -p --agent=coding-agent --no-ask-user` and `COPILOT_GITHUB_TOKEN`
 - [x] Limit tools in CI with `--allow-tool` / `--deny-tool`
 - [x] Persist a CLI-agent change as a reviewable PR (dedicated branch; workflow-owned commit/push and PR creation; never push or merge `main`)
-- [ ] Weekly repository summary workflow (`schedule` with cron; Copilot CLI in Actions) [D2]
-- [ ] 🎓 Local CLI practice: `/plan`, `/delegate`, `/fleet`, `--resume`, `--continue`, `--autopilot`
+- [x] Weekly repository summary workflow (`schedule` with cron; Copilot CLI in Actions) [D2]
+- [x] 🎓 Local CLI practice: `/plan`, `/delegate`, `/fleet`, `--resume`, `--continue`, `--autopilot`
   - Also: `/session`, `/ide`, `/mcp`, `/review`, `/pr`, `--available-tools`, `--output-format=json`, `--disable-builtin-mcps`
-- [ ] 🎓 Inspect `~/.copilot/logs/` and `~/.copilot/session-state/<id>/events.jsonl` (new vs. resumed session)
+- [x] 🎓 Inspect `~/.copilot/logs/` and `~/.copilot/session-state/<id>/events.jsonl` (new vs. resumed session)
 
 ### V2 · GitHub-managed cloud agent (after V1)
 - [x] `.github/workflows/copilot-setup-steps.yml` (`copilot-setup-steps` job: Node + `npm ci`)

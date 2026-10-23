@@ -1,0 +1,70 @@
+name: Feature request
+description: Propose a user-visible capability or improvement.
+title: '[Feature]: '
+labels:
+  - feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the user problem and the smallest useful outcome. Keep unrelated
+        refactors and follow-up ideas out of scope.
+
+  - type: dropdown
+    id: human-validation
+    attributes:
+      label: ¿Requiere validación humana?
+      description: CI debe ejecutarse siempre. Marca Sí si una persona debe comprobar el resultado.
+      options:
+        - Sí
+        - No
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Who is affected and what is difficult today?
+      placeholder: Players cannot tell how much progress remains in a session.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the expected user-visible behavior, not just an implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and boundaries
+      description: Identify affected files or areas and explicitly list work that is out of scope.
+      placeholder: |
+        In scope: src/... 
+        Out of scope: persistence changes, workflow changes
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List testable conditions for completion.
+      placeholder: |
+        - [ ] ...
+        - [ ] npm run test:run passes.
+        - [ ] npm run lint passes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or additional context
+      description: Note rejected approaches, mockups, or any other context.
+    validations:
+      required: false

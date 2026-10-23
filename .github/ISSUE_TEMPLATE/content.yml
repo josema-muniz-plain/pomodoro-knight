@@ -1,0 +1,66 @@
+name: Content change
+description: Create or update game content such as an ASCII sprite or level data.
+title: '[Content]: '
+labels:
+  - content
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for content-only changes. Keep the requested scope explicit
+        so the work can be assigned and reviewed safely.
+
+  - type: dropdown
+    id: human-validation
+    attributes:
+      label: ¿Requiere validación humana?
+      description: CI debe ejecutarse siempre. Marca Sí si una persona debe comprobar el resultado.
+      options:
+        - Sí
+        - No
+    validations:
+      required: true
+
+  - type: dropdown
+    id: content-type
+    attributes:
+      label: Content type
+      options:
+        - ASCII sprite
+        - Level data
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: request
+    attributes:
+      label: Requested change
+      description: State which file or level should change and what should be created or updated.
+      placeholder: Create sprites/level-2.txt for the Squire level.
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: List boundaries that must be preserved, including files that must not change.
+      value: |
+        - Sprite files must use printable ASCII only.
+        - Sprites must be at most 24 columns by 10 rows.
+        - Do not modify application logic or workflows unless this issue explicitly asks for it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List observable conditions that confirm the work is complete.
+      placeholder: |
+        - [ ] The requested content is present.
+        - [ ] npm run validate:sprites passes.
+    validations:
+      required: true
