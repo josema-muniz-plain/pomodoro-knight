@@ -1,0 +1,85 @@
+name: Weekly Repository Summary
+run-name: Weekly Repository Summary (${{ github.event_name }})
+
+# Summarize commits from the previous seven days. This workflow is read-only:
+# Copilot receives prepared Git history and only writes a run summary.
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  summarize:
+    name: Summarize weekly changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install GitHub Copilot CLI
+        run: npm install --global @github/copilot
+
+      - name: Collect commits from the last seven days
+        id: commits
+        run: |
+          git log \
+            --since='7 days ago' \
+            --pretty=format:'- %h | %ad | %an | %s' \
+            --date=short > weekly-commits.txt
+
+          if [ -s weekly-commits.txt ]; then
+            echo "has_commits=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_commits=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Write no-activity summary
+        if: steps.commits.outputs.has_commits == 'false'
+        run: |
+          {
+            echo "## Weekly repository summary"
+            echo
+            echo "No commits were pushed during the previous seven days."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate weekly summary
+        if: steps.commits.outputs.has_commits == 'true'
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+        run: |
+          {
+            cat <<'PROMPT'
+          Write a concise, neutral repository summary in English from the commit
+          list below. Use Markdown with a title and bullet points. Mention only
+          facts supported by the commits; do not invent changes, recommend work,
+          or modify files.
+
+          Commit list:
+          PROMPT
+            cat weekly-commits.txt
+          } > copilot-prompt.txt
+
+          copilot -p "$(cat copilot-prompt.txt)" \
+            --model gpt-6-luna \
+            --silent \
+            --no-ask-user \
+            --no-custom-instructions \
+            --disable-builtin-mcps \
+            --disallow-temp-dir \
+            --secret-env-vars COPILOT_GITHUB_TOKEN \
+            --deny-tool 'write' \
+            --deny-tool 'shell' > weekly-summary.md
+
+          cat weekly-summary.md >> "$GITHUB_STEP_SUMMARY"
