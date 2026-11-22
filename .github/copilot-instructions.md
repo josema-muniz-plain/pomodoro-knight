@@ -161,6 +161,8 @@ pomodoro-knight/
 
 When working on this project:
 
+0. Issues: Always write issues in English, following the templates in `.github/ISSUE_TEMPLATE/`, regardless of the language the request is made in.
+
 1. Sprites: Follow the 24x10 ASCII art rules strictly. Always validate with `npm run validate:sprites`.
 2. Commands: Suggest using npm scripts, not running raw node/vite commands.
 3. Tests: Write Vitest tests for logic; use globals (no imports needed).
