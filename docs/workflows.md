@@ -4,15 +4,14 @@ This document describes the repository automation under [`.github/workflows/`](.
 
 ## At a glance
 
-| Workflow                                                              | Trigger                              | Purpose                                                          | Result                                                                    |
-| --------------------------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| [`ci.yml`](../.github/workflows/ci.yml)                               | PR to `main`, push to `main`, manual | Validate and build the application                               | A `dist` artifact retained for 7 days                                     |
-| [`deploy.yml`](../.github/workflows/deploy.yml)                       | Successful CI on `main`, manual      | Select the CI artifact to deploy and report a deployment failure | Calls the reusable Pages deployment workflow; creates an issue on failure |
-| [`deploy-pages.yml`](../.github/workflows/deploy-pages.yml)           | `workflow_call` only                 | Publish a supplied `dist` artifact to GitHub Pages               | GitHub Pages deployment and `page_url` output                             |
-| [`codeql.yml`](../.github/workflows/codeql.yml)                       | PR to `main`, weekly schedule        | Scan JavaScript/TypeScript for code-security issues              | Code scanning results in GitHub Security                                  |
-| [`dependency-review.yml`](../.github/workflows/dependency-review.yml) | PR to `main`                         | Review dependency changes for known vulnerabilities              | PR summary; fails on high/critical findings                               |
-| [`copilot-cli.yml`](../.github/workflows/copilot-cli.yml)             | Manual, with a natural-language task | Run the coding agent, validate changes, and publish them         | Reviewable PR, or no PR if there are no changes                           |
-| [`weekly-summary.yml`](../.github/workflows/weekly-summary.yml)       | Weekly schedule, manual              | Summarize the last seven days of commits using Copilot CLI       | Actions job summary; no issue or PR                                       |
+| Workflow                                                                  | Trigger                              | Purpose                                                          | Result                                                                     |
+| ------------------------------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| [`ci.yml`](../.github/workflows/ci.yml)                                   | PR to `main`, push to `main`, manual | Validate and build the application                               | A `dist` artifact retained for 7 days                                      |
+| [`deploy.yml`](../.github/workflows/deploy.yml)                           | Successful CI on `main`, manual      | Select the CI artifact to deploy and report a deployment failure | Calls the reusable Pages deployment workflow; creates an issue on failure  |
+| [`deploy-pages.yml`](../.github/workflows/deploy-pages.yml)               | `workflow_call` only                 | Publish a supplied `dist` artifact to GitHub Pages               | GitHub Pages deployment and `page_url` output                              |
+| [`codeql.yml`](../.github/workflows/codeql.yml)                           | PR to `main`, weekly schedule        | Scan JavaScript/TypeScript for code-security issues              | Code scanning results in GitHub Security                                   |
+| [`dependency-review.yml`](../.github/workflows/dependency-review.yml)     | PR to `main`                         | Review dependency changes for known vulnerabilities              | PR summary; fails on high/critical findings                                |
+| [`copilot-setup-steps.yml`](../.github/workflows/copilot-setup-steps.yml) | Cloud-agent setup, manual test       | Prepare Node and dependencies for the managed cloud agent        | Prepared environment; cloud use still needs verification after publication |
 
 ## Delivery flow
 
@@ -219,11 +218,13 @@ fail-on-severity: high
 
 It has `contents: read` to inspect the change and `pull-requests: write` because `comment-summary-in-pr: always` publishes the dependency-review summary on the pull request. Removing the comment would allow this permission to be reduced to read-only access.
 
-## Coding agent CLI — `copilot-cli.yml`
+## Archived V1 CLI workflows
 
-### Trigger and execution flow
+The former V1 workflows are preserved outside `.github/workflows/`, so Actions does not discover or execute them from this branch. Their removal only takes effect on the default branch once these changes are merged. Existing runs and the `COPILOT_GITHUB_TOKEN` secret are not deleted. Restoring either file requires a security review; the known gaps below remain unresolved.
 
-This workflow runs only through `workflow_dispatch`. Its required `task` input is a complete natural-language request, not an issue number. It checks out the repository's default branch even if the operator selects a different branch when dispatching the workflow.
+### Coding agent CLI — `copilot-cli.yml`
+
+[`.github/v1/copilot-cli.yml`](../.github/v1/copilot-cli.yml) was launched only through `workflow_dispatch`. Its required `task` input is a complete natural-language request, not an issue number. It checks out the repository's default branch even if the operator selects a different branch when dispatching the workflow.
 
 ```mermaid
 flowchart TD
@@ -264,9 +265,9 @@ Therefore, do **not** assume that this workflow's push or PR creation automatica
 
 For local CLI usage and the distinction between local execution and cloud delegation, see [the Copilot CLI cheat sheet](copilot-cli-cheatsheet.md).
 
-## Weekly summary — `weekly-summary.yml`
+### Weekly summary — `weekly-summary.yml`
 
-This workflow runs every Monday at **09:00 UTC** or through `workflow_dispatch`. It has only `contents: read` and uses `COPILOT_GITHUB_TOKEN` to authenticate Copilot CLI.
+[`.github/v1/weekly-summary.yml`](../.github/v1/weekly-summary.yml) formerly ran every Monday at **09:00 UTC** or through `workflow_dispatch`. Its scheduled and manual triggers are inactive in this branch. It has only `contents: read` and uses `COPILOT_GITHUB_TOKEN` to authenticate Copilot CLI.
 
 ```mermaid
 flowchart TD
@@ -288,27 +289,27 @@ Copilot currently uses `gpt-6-luna` with shell and write tools denied, custom in
 
 The result appears in the Actions run summary. No changes are committed, no artifact is uploaded, and no issue or PR is created.
 
-## Archived V2 cloud-agent setup — `copilot-setup-steps.yml`
+## V2 cloud-agent setup — `copilot-setup-steps.yml`
 
-[`.github/v2/copilot-setup-steps.yml`](../.github/v2/copilot-setup-steps.yml) is retained for a future GitHub Copilot cloud-agent (V2) lab. Because it is outside `.github/workflows/`, GitHub Actions does not discover or run it, and the cloud agent cannot use it as its setup workflow. It was moved here intentionally while V2 is deferred.
+[`.github/workflows/copilot-setup-steps.yml`](../.github/workflows/copilot-setup-steps.yml) defines the managed Copilot cloud agent's setup job. It was previously archived under `.github/v2/` while access was blocked. Publishing it to the default branch and verifying it in an actual cloud session remain necessary; its presence in this branch does not establish that the agent used it.
 
 ```mermaid
 flowchart LR
-  Start[Archived V2 setup definition] --> Checkout[Checkout repository]
+  Start[Cloud-agent setup] --> Checkout[Checkout repository]
   Checkout --> Node[Set up Node 22 with npm cache]
   Node --> Install[npm ci]
   Install --> Ready[Development environment prepared]
 ```
 
-Its former workflow definition has `contents: read` and one job named `copilot-setup-steps`. It only checks out the repository and installs dependencies. It does not run a coding task, validate changes, or create a PR by itself.
+The workflow has `contents: read` and one job named `copilot-setup-steps`. It only checks out the repository and installs dependencies. It does not run a coding task, validate changes, or create a PR by itself. A manual dispatch can test the setup job but does not prove that the cloud agent used it.
 
-It is separate from `copilot-cli.yml`, which installs and invokes Copilot CLI directly in its own runner job. The CLI workflow does not call this archived setup definition.
+It is separate from the archived `copilot-cli.yml`, which installed and invoked Copilot CLI in its own runner job. The CLI workflow did not call this setup. See [the cloud-agent lab](cloud-agent-lab.md) for the evidence and remaining checks.
 
 ## Implemented automation versus roadmap
 
-The seven workflows listed above are the current implementation. The coding-agent and weekly-summary workflows invoke Copilot CLI directly; there are currently no gh-aw `.md` / `.lock.yml` workflow pairs under `.github/workflows/.` The V2 setup definition is archived under `.github/v2/` and is not active automation.
+The workflows listed above are present in this branch. The V1 coding-agent and weekly-summary workflows are archived under `.github/v1/` and are not active here. There are currently no gh-aw `.md` / `.lock.yml` workflow pairs under `.github/workflows/`. The V2 setup is in its intended workflow location but its use by a cloud session remains to be verified after publication.
 
-Issue Triage, CI Doctor, Blacksmith `/forge`, and Sprite Preview are still planned workflows in the README, not active automation. The existing weekly summary is a neutral commit recap, not the planned epic-tone Weekly Chronicle. Agent definitions alone do not establish workflow triggers.
+Issue Triage, CI Doctor, Blacksmith `/forge`, and Sprite Preview are still planned workflows in the README, not active automation. The archived weekly summary was a neutral commit recap, not the planned epic-tone Weekly Chronicle. Agent definitions alone do not establish workflow triggers.
 
 ## Repository security settings
 

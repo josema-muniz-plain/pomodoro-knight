@@ -52,6 +52,10 @@ It also serves as a **lab for the [GH-600: Developing in Agentic AI Systems](htt
 4. Sprites live in **`.txt`** files with a metadata header (level, name).
 5. Everything is validated with `npm run validate:sprites` in CI.
 
+## 🤖 Agent execution
+
+The current focus is the GitHub-managed cloud agent (V2). The former Copilot CLI workflows (V1) are archived in [`.github/v1/`](.github/v1/) and are not active workflows in this branch. See [the workflow documentation](docs/workflows.md) and [cloud-agent lab](docs/cloud-agent-lab.md).
+
 ## 🤖 Planned agentic workflows
 
 | Workflow | Trigger | What it does |
@@ -88,10 +92,9 @@ Target `.github/` structure:
 ├── workflows/
 │   ├── ci.yml                    # needs, matrix, outputs, artifacts, concurrency
 │   ├── deploy.yml                # environments, Pages permissions
-│   ├── actions-lab.yml           # contexts, inputs, if:, workflow_call
-│   └── *.md / *.lock.yml         # gh-aw workflows
-└── v2/
-    └── copilot-setup-steps.yml   # archived cloud-agent environment; not active
+│   ├── actions-lab.yml           # contexts, inputs, if:, workflow_call (planned)
+│   ├── copilot-setup-steps.yml   # cloud-agent environment; verify after publication
+│   └── *.md / *.lock.yml         # gh-aw workflows (planned)
 ```
 
 Reference study guide: [GH-600 Public Study Guide](https://gist.github.com/naim149/a8aa41c7468685b7d984822c38863aae).

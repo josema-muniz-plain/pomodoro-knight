@@ -69,9 +69,9 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [x] [PK-044](docs/plans/completed/PK-044.md) 🎓 Concurrency with `queue: max` (e.g. a serialized job) and understand why it must not be combined with `cancel-in-progress: true` [D5]
 
 ## Priority follow-up · Workflow review [D2][D4][D6]
-> Close these gaps in the existing pipelines before enabling `/agent` issue/comment triggers or adding multi-agent automation. Keep the CI → immutable build artifact → deployment architecture; improve its guarantees rather than adding more workflows.
+> PK-045–048 concern the archived V1 CLI workflow and remain pending if V1 is resumed; do not enable `/agent` triggers without addressing them. PK-049–050 still apply to the active CI/deploy pipeline. Keep the CI → immutable build artifact → deployment architecture.
 
-- [ ] [PK-045](docs/plans/PK-045.md) Make required CI checks run on the actual published PR head, starting with the existing manual `copilot-cli.yml` flow
+- [ ] [PK-045](docs/plans/PK-045.md) Make required CI checks run on the actual published PR head, starting with the archived manual `copilot-cli.yml` flow if V1 is resumed
   - Account for `GITHUB_TOKEN` event suppression; evaluate a least-privilege GitHub App/token publication flow or explicit dispatch, and verify that resulting checks attach to the correct SHA and satisfy the existing ruleset
   - Define any human approval needed before executing untrusted changes; keep validation credentials minimal. Successful pre-publication validation or approval does not replace required checks on the current PR head; never bypass branch protection or auto-merge
 - [ ] [PK-046](docs/plans/PK-046.md) Isolate agent generation, untrusted-code validation, and privileged publication in separate jobs/runners with minimal permissions
@@ -90,9 +90,10 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 
 ## Phase 3 · Native Copilot: CLI in Actions and multi-agent [D2][D3][D5]
 
-> **Execution strategy:** use V1 (Copilot CLI locally and in workflows we own) for all active implementation work. V2 is deferred because cloud-agent access is currently blocked in the target repository/organization; the exact licensing or policy cause is not yet verified. Cloud-specific behavior remains theory or a future lab, not a prerequisite for V1.
+> **Execution strategy:** focus on V2, GitHub's managed cloud agent. V1's own CLI workflows are archived under `.github/v1/` and are not active in this branch; local CLI practice and shared agent definitions remain available. Cloud-agent runs have succeeded (see [PR #12](https://github.com/josema-muniz-plain/pomodoro-knight/pull/12) and [PR #13](https://github.com/josema-muniz-plain/pomodoro-knight/pull/13)). Verify cloud-specific behavior in practice rather than assuming it matches V1. This change takes effect remotely after it reaches the default branch.
 
-### V1 · Copilot CLI in Actions and local practice (active)
+### V1 · Copilot CLI in Actions and local practice (archived)
+> The completed items below record prior work; both CLI workflows are now archived in `.github/v1/`. Their manual and scheduled triggers are inactive in this branch.
 - [x] [PK-051](docs/plans/completed/PK-051.md) Custom `coding-agent` profile: workflow with `copilot -p --agent=coding-agent --no-ask-user` and `COPILOT_GITHUB_TOKEN`
 - [x] [PK-052](docs/plans/completed/PK-052.md) Limit tools in CI with `--allow-tool` / `--deny-tool`
 - [x] [PK-053](docs/plans/completed/PK-053.md) Persist a CLI-agent change as a reviewable PR (dedicated branch; workflow-owned commit/push and PR creation; never push or merge `main`)
@@ -101,8 +102,8 @@ Goal: writing and **knowing how to read** every key without looking at the docum
   - Also: `/session`, `/ide`, `/mcp`, `/review`, `/pr`, `--available-tools`, `--output-format=json`, `--disable-builtin-mcps`
 - [x] [PK-056](docs/plans/completed/PK-056.md) 🎓 Inspect `~/.copilot/logs/` and `~/.copilot/session-state/<id>/events.jsonl` (new vs. resumed session)
 
-### V1 · Issue-to-PR integration and follow-up (cloud workflow alternatives)
-> Reproduce the practical delegation loop with our own Actions workflows, not the native cloud integration: issue → CLI → validated PR → feedback → updated PR. Use an explicit custom command such as `/agent`; native Copilot assignment, `@copilot`, **View session**, and **Approve and run workflows** are not activated by installing the CLI.
+### V1 · Issue-to-PR integration and follow-up (deferred)
+> If V1 is resumed, reproduce the practical delegation loop with our own Actions workflows, not the native cloud integration: issue → CLI → validated PR → feedback → updated PR. Use an explicit custom command such as `/agent`; native Copilot assignment, `@copilot`, **View session**, and **Approve and run workflows** are not activated by installing the CLI.
 
 - [ ] [PK-057](docs/plans/PK-057.md) Start a CLI task from an issue using an authorized trigger (e.g. `/agent` in an issue comment); fetch its title, body, and relevant comments, reuse the existing issue templates, and link the generated PR back to the issue
   - Select an allowed agent profile for the task, including `blacksmith` for content/sprite issues; adapt deterministic scope checks to the selected profile rather than assuming every task belongs in `src/`, `test/`, or `scripts/`
@@ -118,17 +119,17 @@ Goal: writing and **knowing how to read** every key without looking at the docum
   - Serialize work per issue/PR, prevent duplicate PRs on retries, and detect head changes before publishing so concurrent feedback or human commits are not overwritten
 - [ ] [PK-062](docs/plans/PK-062.md) End-to-end V1 lab: delegate a content issue to `blacksmith`, inspect the run, review the generated PR, request a change with `/agent`, recover an intentional failure, and confirm required checks pass on the final head without merging automatically
 
-### V2 · GitHub-managed cloud agent (deferred — access blocked)
-> These tasks require access to the managed cloud service. Keep the existing setup for future use; it does not launch or configure our V1 CLI runs. Do not treat the remaining items as active implementation work.
+### V2 · GitHub-managed cloud agent
+> The managed service is accessible. The setup workflow prepares cloud sessions, not V1 CLI runs; verify its use in a real cloud session after it reaches the default branch. See [the cloud-agent lab](docs/cloud-agent-lab.md).
 
-- [x] [PK-063](docs/plans/completed/PK-063.md) `.github/v2/copilot-setup-steps.yml` (`copilot-setup-steps` job: Node + `npm ci`)
+- [x] [PK-063](docs/plans/completed/PK-063.md) Prepare `copilot-setup-steps` (Node + `npm ci`); now located at `.github/workflows/copilot-setup-steps.yml`, pending verification in a cloud session
 - [x] [PK-064](docs/plans/completed/PK-064.md) Issue templates (bug / content / feature)
 - [ ] [PK-065](docs/plans/PK-065.md) Assign a content issue to the cloud agent and practice: **View session**, `@copilot` on the PR, **Approve and run workflows**
   - Stalled-agent recovery: unassign + reassign the issue, repeat the comment, confirm that the commenter has write access
 - [ ] [PK-066](docs/plans/PK-066.md) Configure cloud-agent MCP secrets with the `COPILOT_MCP_` prefix (Agents secrets, not Actions secrets)
 
-### V1 continued · Agent definition, MCP, and multi-agent workflows
-> Run these labs through Copilot CLI locally or in our own Actions workflows. Configure MCP credentials through local environment variables or explicitly passed Actions secrets, not cloud-agent Agents secrets. Check support per execution surface; cloud/IDE-only settings are theory where unavailable in CLI. Multi-agent pipelines use workflow jobs, `needs`, and artifacts; publication remains owned by deterministic workflow steps.
+### V1 continued · Agent definition, MCP, and multi-agent workflows (deferred)
+> These V1 labs are deferred while focusing on V2. If resumed, run them through Copilot CLI locally or in our own Actions workflows. Configure MCP credentials through local environment variables or explicitly passed Actions secrets, not cloud-agent Agents secrets. Check support per execution surface; cloud/IDE-only settings are theory where unavailable in CLI. Multi-agent pipelines use workflow jobs, `needs`, and artifacts; publication remains owned by deterministic workflow steps.
 
 - [ ] [PK-067](docs/plans/PK-067.md) 🎓 Agent frontmatter: `description` is required (`name` is not), omitting `tools` = all tools, `tools: []` = none; try `model`, `target`, `disable-model-invocation`, `user-invocable`
 - [ ] [PK-068](docs/plans/PK-068.md) Agent `auditor.agent.md` (read-only; prerequisite for the pipeline)
@@ -136,7 +137,7 @@ Goal: writing and **knowing how to read** every key without looking at the docum
   - Same servers in JSON (`.vscode/mcp.json` → `mcpServers`) vs. agent YAML (`mcp-servers`); adapt `inputs`/`envFile` → `env`
   - Know when to use `sse` (top-level `url`, legacy endpoint) and that a URL inside `args` (`mcp-remote`) is still `local`
 - [ ] [PK-070](docs/plans/PK-070.md) Configure authenticated MCP access for V1 with local environment variables and explicitly passed Actions secrets; verify the installed CLI's supported configuration and perform a least-privilege tool call locally and in Actions
-  - This replaces the practical V2 Agents-secrets lab; do not assume the cloud-specific `COPILOT_MCP_` prefix automatically injects secrets into CLI servers
+  - This is separate from the V2 Agents-secrets lab; do not assume the cloud-specific `COPILOT_MCP_` prefix automatically injects secrets into CLI servers
   - Restrict credentials to the intended server/step, verify failure when credentials are absent, and keep secret values out of logs and session artifacts
 - [ ] [PK-071](docs/plans/PK-071.md) Agent-assisted deployment risk assessment and approval [D2][D3][D6]
   - Deterministic `classify-changes` job (`dorny/paths-filter` or `git diff --name-only`) publishes `risky=true|false` for the deployment gate
@@ -147,7 +148,7 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [ ] [PK-073](docs/plans/PK-073.md) Variant with `strategy.matrix.agent: [sprite-reviewer, auditor]`
 
 ## Phase 4 · Guardrails and hooks [D4][D6]
-> Implement and test guardrails with V1: interactive local CLI and non-interactive CLI in Actions. Cloud-specific differences are theory until V2 access is available. Verify hook syntax against the installed CLI version before implementation.
+> V1-specific CLI guardrail labs are deferred while focusing on V2. Verify cloud-specific compatibility separately; do not assume hooks or permissions behave identically across surfaces. If V1 is resumed, verify hook syntax against the installed CLI version before implementation.
 
 - [ ] [PK-074](docs/plans/PK-074.md) `.github/hooks/policy.json` with a `preToolUse` hook denying agent-initiated `git push`; verify enforcement in local CLI and Actions without blocking the workflow-owned publication step
   - Provide the appropriate `bash` / `powershell` hook commands for Linux Actions runners and local Windows practice; verify tool names and matching support in the installed CLI
@@ -180,7 +181,7 @@ Goal: writing and **knowing how to read** every key without looking at the docum
 - [ ] [PK-093](docs/plans/PK-093.md) Consider mechanics beyond the cosmetic (battles against Procrastination 👹)
 
 ## Phase 8 · Loose ends from completed phases
-- [ ] [PK-094](docs/plans/PK-094.md) Update `docs/workflows.md` to cover `copilot-cli.yml`, `weekly-summary.yml`, and `copilot-setup-steps.yml`; distinguish active CLI automation, deferred cloud-agent setup, and educational examples
+- [ ] [PK-094](docs/plans/PK-094.md) Update `docs/workflows.md` to cover `copilot-cli.yml`, `weekly-summary.yml`, and `copilot-setup-steps.yml`; distinguish archived CLI automation, cloud-agent setup, and educational examples
   - Explicitly document that `copilot-setup-steps.yml` prepares the managed cloud agent, not our own CLI workflow runs
 - [ ] [PK-095](docs/plans/PK-095.md) 🎓 Review which CI elements should remain as learning exercises versus operational requirements: standalone context job, Node version matrix, and sprite-count job output
 - [ ] [PK-096](docs/plans/PK-096.md) Evaluate whether the weekly summary is actually useful in the Actions UI; keep it as an explicit CLI/cron lab, publish it somewhere readers use, or disable the schedule if it adds no value

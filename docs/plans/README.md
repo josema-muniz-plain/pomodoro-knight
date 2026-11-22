@@ -9,9 +9,25 @@ Cada checkbox de [TODO.md](../../TODO.md) tiene un ID estable y un plan individu
 - `TODO.md` es la única fuente de estado: redactar o verificar un plan no marca su checkbox. Los planes con checkbox `[x]` se guardan en [`completed/`](completed/); los demás permanecen aquí. Esa ubicación refleja el estado del TODO, no es una verificación independiente de la implementación.
 - Cada plan contiene objetivo, alcance, dependencias, pasos y aceptación. Las dependencias ordenan el trabajo, pero un checkbox histórico no sustituye comprobar sus garantías actuales.
 - Las rutas nuevas/propuestas y las acciones descritas son planes, no implementaciones. La configuración remota de GitHub requiere comprobación con acceso autorizado.
-- Los planes V2 siguen diferidos por el bloqueo cloud; no son requisitos para V1. Los temas sin checkbox del apartado de teoría no se han convertido en tareas nuevas.
+- El foco actual es V2: el agente cloud ya se ha ejecutado en el repositorio. Los workflows CLI de V1 están archivados en `.github/v1/`; sus planes se conservan para una posible reanudación. Los experimentos pendientes deben verificarse en su propia superficie. Los temas sin checkbox del apartado de teoría no se han convertido en tareas nuevas.
 
-## Orden recomendado para issue → CLI → PR
+## Relevo: siguiente trabajo V2 cloud
+
+**Decisión del usuario:** centrarse en V2. No reactivar ni ampliar los workflows V1; sus YAML se conservan en `.github/v1/`, junto con sus planes para una posible reanudación. Los agentes, instrucciones y la CLI local no se han eliminado. PK-049–050 siguen aplicando al deploy existente.
+
+**Estado al relevo:** hay cambios locales sin commit en `feat/cicd-agentic-v2`. Incluyen el setup cloud en `.github/workflows/copilot-setup-steps.yml`, el archivo de los dos workflows V1 y documentación actualizada. Inspeccionar `git status` y `git diff` antes de actuar y preservar estos cambios. Nada de esto se ha publicado; en la rama predeterminada los workflows V1 pueden seguir activos, incluido el cron semanal. No se ha eliminado ningún secreto.
+
+**Orden y criterios:**
+
+1. Revisar los cambios locales, incluidos los archivos nuevos no mostrados por `git diff` sin argumentos. Abrir/publicar el PR y fusionarlo solo con autorización y revisión humana; no saltarse los checks. Después confirmar en GitHub que el setup está en la rama predeterminada y los workflows V1 ya no están allí.
+2. Ejecutar [PK-065](PK-065.md): crear una issue pequeña de contenido, asignar Copilot y registrar sesión, PR y evidencia de que se ejecutó el nuevo setup. Probar `blacksmith` si la superficie lo permite; no asumir que está seleccionado.
+3. En el mismo PR pedir una modificación con `@copilot`, revisar el resultado y, si GitHub lo requiere y un usuario autorizado lo aprueba, ejecutar los workflows. Verificar los checks del resultado final y documentar la recuperación/permisos. Recoger enlaces y limitaciones en [docs/cloud-agent-lab.md](../cloud-agent-lab.md); no hacer auto-merge.
+4. Ejecutar [PK-066](PK-066.md) después del lab básico: verificar documentación vigente de MCP y Agents secrets, usar una credencial temporal de mínimo privilegio, probar con y sin ella y revocarla. Nunca registrar valores secretos.
+5. Mantener sin completar los checkboxes hasta tener evidencia y confirmación del usuario. Si una interacción requiere acceso, aprobación o intervención humana que el agente no tiene, describir el bloqueo y pedir ayuda; no simular el resultado.
+
+**Validación local realizada:** `npm ci`, lint, 24 tests, validación de sprites y build pasaron con Node 26 en Windows, no en el runner cloud Node 22. `prettier --check . --end-of-line auto` pasó; `npm run format:check` falló por los finales de línea CRLF del checkout. `npm ci` notificó siete vulnerabilidades moderadas en dependencias de desarrollo. Comprobar de nuevo si cambian los archivos; una ejecución local no demuestra que Actions o el setup cloud funcionen.
+
+## Orden para issue → CLI → PR si se retoma V1
 
 1. Endurecer el flujo manual: [scope completo](PK-047.md), [aislamiento](PK-046.md), [contrato de validación](PK-048.md) y [required checks del PR](PK-045.md).
 2. Completar también [procedencia de deploy](PK-049.md) y [frescura/rollback](PK-050.md), respetando el bloqueo de revisión prioritaria indicado en el TODO.
@@ -116,7 +132,7 @@ Cada checkbox de [TODO.md](../../TODO.md) tiene un ID estable y un plan individu
 | [PK-060](PK-060.md) | Resumen trazable de tareas                 |
 | [PK-061](PK-061.md) | Recuperación de tareas fallidas            |
 | [PK-062](PK-062.md) | Laboratorio V1 extremo a extremo           |
-| [PK-063](completed/PK-063.md) | Setup del agente cloud diferido            |
+| [PK-063](completed/PK-063.md) | Preparación del setup del agente cloud     |
 | [PK-064](completed/PK-064.md) | Plantillas reutilizables de issues         |
 | [PK-065](PK-065.md) | Laboratorio del agente cloud               |
 | [PK-066](PK-066.md) | Secretos MCP del agente cloud              |
