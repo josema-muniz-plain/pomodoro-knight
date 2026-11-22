@@ -13,10 +13,10 @@ body:
   - type: dropdown
     id: human-validation
     attributes:
-      label: ¿Requiere validación humana?
-      description: CI debe ejecutarse siempre. Marca Sí si una persona debe comprobar el resultado.
+      label: Requires human validation?
+      description: CI must always run. Select Yes if a person must verify the result.
       options:
-        - Sí
+        - 'Yes'
         - No
     validations:
       required: true

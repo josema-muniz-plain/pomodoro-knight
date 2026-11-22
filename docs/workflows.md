@@ -11,24 +11,35 @@ This document describes the repository automation under [`.github/workflows/`](.
 | [`deploy-pages.yml`](../.github/workflows/deploy-pages.yml)           | `workflow_call` only                 | Publish a supplied `dist` artifact to GitHub Pages               | GitHub Pages deployment and `page_url` output                             |
 | [`codeql.yml`](../.github/workflows/codeql.yml)                       | PR to `main`, weekly schedule        | Scan JavaScript/TypeScript for code-security issues              | Code scanning results in GitHub Security                                  |
 | [`dependency-review.yml`](../.github/workflows/dependency-review.yml) | PR to `main`                         | Review dependency changes for known vulnerabilities              | PR summary; fails on high/critical findings                               |
+| [`copilot-cli.yml`](../.github/workflows/copilot-cli.yml)             | Manual, with a natural-language task | Run the coding agent, validate changes, and publish them         | Reviewable PR, or no PR if there are no changes                           |
+| [`weekly-summary.yml`](../.github/workflows/weekly-summary.yml)       | Weekly schedule, manual              | Summarize the last seven days of commits using Copilot CLI       | Actions job summary; no issue or PR                                       |
 
 ## Delivery flow
 
 ```mermaid
-flowchart LR
-  PR[Pull request to main] --> CI[CI]
+flowchart TD
+  PR[Pull request to main] --> CI[ci.yml]
   Push[Push to main] --> CI
   ManualCI[Manual CI run] --> CI
-  CI -->|dist artifact| Artifact[(dist, 7 days)]
-  CI -->|successful main run| Deploy[Deploy workflow]
+  PR --> CodeQL[codeql.yml]
+  Schedule[Monday at 04:23 UTC] --> CodeQL
+  CodeQL --> Security[GitHub Security findings]
+  PR --> Dependencies[dependency-review.yml]
+  Dependencies --> Review[PR summary; fails on high/critical vulnerabilities]
+  CI -->|build succeeds| Artifact[(dist artifact, retained for 7 days)]
+  CI --> Gate{Successful CI run on main?}
+  Gate -->|Yes| Deploy[deploy.yml]
+  Gate -->|No| Stop[No automatic deployment]
   ManualDeploy[Manual deploy + CI run ID] --> Deploy
-  Deploy --> PagesWorkflow[Reusable deploy-pages workflow]
-  Artifact --> PagesWorkflow
-  PagesWorkflow --> Pages[GitHub Pages]
+  Deploy --> PagesWorkflow[Reusable deploy-pages.yml]
+  Artifact -.->|Download without rebuilding| PagesWorkflow
+  PagesWorkflow --> Pages[GitHub Pages and page_url output]
   PagesWorkflow -->|failure| FailureIssue[Deployment failure issue]
 ```
 
-The automatic deploy path only continues when the triggering CI run completed successfully. A manually dispatched deploy instead receives the CI run ID from the operator.
+The automatic deploy path only continues when the triggering CI run completed successfully on `main`. A manually dispatched deploy instead receives the CI run ID from the operator. The reusable deployment job is governed by the `github-pages` Environment, including approval if configured.
+
+CodeQL and dependency review are independent workflows, not `needs` dependencies of the CI build or deployment. Whether their checks block merging is controlled by repository rulesets or branch protection, not by these workflow dependencies.
 
 ## Common conventions
 
@@ -70,6 +81,22 @@ For a pull request, `github.head_ref` is its source branch, so a newer push to t
 | `test`             | —                                  | Runs Vitest on Node 20 and Node 22. The matrix does not fail fast, so both results are retained.                    |
 | `validate-sprites` | —                                  | Runs `npm run validate:sprites`, writes a sprite table even after a validation failure, and exposes `sprite-count`. |
 | `build`            | `lint`, `test`, `validate-sprites` | Builds the app, then uploads the `dist` artifact.                                                                   |
+
+```mermaid
+flowchart TD
+  Start[CI starts] --> Context[Run context summary]
+  Start --> Lint[Prettier and ESLint]
+  Start --> Test20[Vitest on Node 20]
+  Start --> Test22[Vitest on Node 22]
+  Start --> Sprites[Validate ASCII sprites]
+  Lint --> Build[Production build]
+  Test20 --> Build
+  Test22 --> Build
+  Sprites -->|sprite-count output| Build
+  Build --> Artifact[(dist artifact)]
+```
+
+The validation jobs run in parallel. `build` requires all of them to succeed; `context` is independent and is not a build dependency.
 
 `validate-sprites` writes its count to `$GITHUB_OUTPUT`:
 
@@ -191,6 +218,97 @@ fail-on-severity: high
 ```
 
 It has `contents: read` to inspect the change and `pull-requests: write` because `comment-summary-in-pr: always` publishes the dependency-review summary on the pull request. Removing the comment would allow this permission to be reduced to read-only access.
+
+## Coding agent CLI — `copilot-cli.yml`
+
+### Trigger and execution flow
+
+This workflow runs only through `workflow_dispatch`. Its required `task` input is a complete natural-language request, not an issue number. It checks out the repository's default branch even if the operator selects a different branch when dispatching the workflow.
+
+```mermaid
+flowchart TD
+  Task[Manual dispatch with task] --> Checkout[Checkout default branch without persisted credentials]
+  Checkout --> Setup[Node 22, npm ci, and Copilot CLI]
+  Setup --> Agent[Run Copilot CLI with coding-agent]
+  Agent --> Scope{Changes only in src/, test/, scripts/?}
+  Scope -->|No| Fail[Fail without publishing a PR]
+  Scope -->|Yes| Validate[Tests, lint, build, and sprite validation]
+  Validate -->|Failure| Fail
+  Validate -->|Success| Changes{Any changes to publish?}
+  Changes -->|No| End[Finish without a PR]
+  Changes -->|Yes| Publish[Workflow creates branch, commit, and push]
+  Publish --> PR[Open reviewable PR against default branch]
+  PR -.-> Human[Human review and merge]
+```
+
+The CLI runs with `--agent=coding-agent`, using [the repository agent definition](../.github/agents/coding-agent.agent.md), and currently selects `gpt-6-luna`. The agent works in the temporary runner checkout. A later workflow step, not the agent, owns Git publication. There is no automatic merge.
+
+### Permissions and validation boundaries
+
+- Workflow permissions are `contents: write` and `pull-requests: write` for branch and PR publication.
+- Copilot authenticates through the `COPILOT_GITHUB_TOKEN` repository secret. The checkout uses `persist-credentials: false` to avoid leaving the workflow token in Git configuration while the agent runs.
+- CLI tool rules allow `write` and `shell(npm:*)`; they explicitly deny `shell(git:*)`, `shell(rm)`, and `write(.env)`.
+- `--no-ask-user` prevents interactive questions. Built-in MCPs and temporary-directory access are disabled, and the Copilot token is declared through `--secret-env-vars`.
+- After the agent returns, the workflow checks tracked and untracked changes against `src/`, `test/`, and `scripts/`. A change outside those paths fails the run. This scope check is repeated before publication.
+- Validation runs `npm run test:run`, `npm run lint`, `npm run build`, and `npm run validate:sprites`, in that order. Unlike CI, this workflow does **not** run `npm run format:check` or a Node-version matrix.
+
+These are configured tool restrictions and post-run checks, not a complete sandbox: allowing npm commands permits project scripts to execute. Review the diff and validation results before merging.
+
+When changes remain, the workflow creates `copilot/run-<run_id>`, commits them, pushes the branch, and opens a PR against the default branch. If there are no changes, it records that outcome in the job summary without creating a PR. Repository settings must permit GitHub Actions to create pull requests.
+
+### Important: the generated PR does not automatically trigger PR checks
+
+Publication uses the workflow's `GITHUB_TOKEN` (`github.token`), not the Copilot authentication token. GitHub normally suppresses new workflow runs caused by events generated with `GITHUB_TOKEN`, except explicit `workflow_dispatch` and `repository_dispatch` events.
+
+Therefore, do **not** assume that this workflow's push or PR creation automatically triggers CI, CodeQL, or dependency review. The validation step inside this workflow is not a replacement for all those checks. If checks are missing, investigate this event boundary rather than bypassing required checks. An authorized human update to the PR branch or a separately designed GitHub App/token-based publication path can generate eligible events; neither is automated here.
+
+For local CLI usage and the distinction between local execution and cloud delegation, see [the Copilot CLI cheat sheet](copilot-cli-cheatsheet.md).
+
+## Weekly summary — `weekly-summary.yml`
+
+This workflow runs every Monday at **09:00 UTC** or through `workflow_dispatch`. It has only `contents: read` and uses `COPILOT_GITHUB_TOKEN` to authenticate Copilot CLI.
+
+```mermaid
+flowchart TD
+  Schedule[Monday at 09:00 UTC] --> Checkout[Checkout full history]
+  Manual[Manual dispatch] --> Checkout
+  Checkout --> Commits[Collect commits from the last seven days]
+  Commits --> HasCommits{Any commits?}
+  HasCommits -->|No| Empty[Write no-activity job summary]
+  HasCommits -->|Yes| Prompt[Prepare prompt from commit list]
+  Prompt --> Copilot[Copilot CLI summarizes commits]
+  Copilot --> Summary[Append Markdown to Actions job summary]
+```
+
+The checkout uses `fetch-depth: 0` and `persist-credentials: false`. After installing Node 22 and Copilot CLI, the workflow runs `git log --since='7 days ago'` over the checked-out history, collecting commit hashes, dates, authors, and subjects. This is a commit-history summary, not a query of all repository issues, PRs, or push events. Scheduled runs use the default branch; manual runs use the selected ref.
+
+If no commits are found, the workflow writes a fixed no-activity message and skips Copilot. Otherwise it prepares a prompt asking for a concise, neutral English summary grounded only in the supplied commits.
+
+Copilot currently uses `gpt-6-luna` with shell and write tools denied, custom instructions and built-in MCPs disabled, temporary-directory access disabled, and the token declared through `--secret-env-vars`. The workflow shell captures the response in `weekly-summary.md` and appends it to `$GITHUB_STEP_SUMMARY`.
+
+The result appears in the Actions run summary. No changes are committed, no artifact is uploaded, and no issue or PR is created.
+
+## Archived V2 cloud-agent setup — `copilot-setup-steps.yml`
+
+[`.github/v2/copilot-setup-steps.yml`](../.github/v2/copilot-setup-steps.yml) is retained for a future GitHub Copilot cloud-agent (V2) lab. Because it is outside `.github/workflows/`, GitHub Actions does not discover or run it, and the cloud agent cannot use it as its setup workflow. It was moved here intentionally while V2 is deferred.
+
+```mermaid
+flowchart LR
+  Start[Archived V2 setup definition] --> Checkout[Checkout repository]
+  Checkout --> Node[Set up Node 22 with npm cache]
+  Node --> Install[npm ci]
+  Install --> Ready[Development environment prepared]
+```
+
+Its former workflow definition has `contents: read` and one job named `copilot-setup-steps`. It only checks out the repository and installs dependencies. It does not run a coding task, validate changes, or create a PR by itself.
+
+It is separate from `copilot-cli.yml`, which installs and invokes Copilot CLI directly in its own runner job. The CLI workflow does not call this archived setup definition.
+
+## Implemented automation versus roadmap
+
+The seven workflows listed above are the current implementation. The coding-agent and weekly-summary workflows invoke Copilot CLI directly; there are currently no gh-aw `.md` / `.lock.yml` workflow pairs under `.github/workflows/.` The V2 setup definition is archived under `.github/v2/` and is not active automation.
+
+Issue Triage, CI Doctor, Blacksmith `/forge`, and Sprite Preview are still planned workflows in the README, not active automation. The existing weekly summary is a neutral commit recap, not the planned epic-tone Weekly Chronicle. Agent definitions alone do not establish workflow triggers.
 
 ## Repository security settings
 

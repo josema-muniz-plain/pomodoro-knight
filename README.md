@@ -85,12 +85,13 @@ Target `.github/` structure:
 ├── skills/validate-sprite/SKILL.md
 ├── agents/{coding-agent,blacksmith,sprite-reviewer,orchestrator}.agent.md
 ├── hooks/policy.json
-└── workflows/
-    ├── ci.yml                    # needs, matrix, outputs, artifacts, concurrency
-    ├── deploy.yml                # environments, Pages permissions
-    ├── actions-lab.yml           # contexts, inputs, if:, workflow_call
-    ├── copilot-setup-steps.yml   # cloud agent environment
-    └── *.md / *.lock.yml         # gh-aw workflows
+├── workflows/
+│   ├── ci.yml                    # needs, matrix, outputs, artifacts, concurrency
+│   ├── deploy.yml                # environments, Pages permissions
+│   ├── actions-lab.yml           # contexts, inputs, if:, workflow_call
+│   └── *.md / *.lock.yml         # gh-aw workflows
+└── v2/
+    └── copilot-setup-steps.yml   # archived cloud-agent environment; not active
 ```
 
 Reference study guide: [GH-600 Public Study Guide](https://gist.github.com/naim149/a8aa41c7468685b7d984822c38863aae).
