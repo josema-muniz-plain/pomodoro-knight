@@ -32,12 +32,17 @@ The setup prepares the managed agent's environment; it does not start a task or 
 
 ### Results
 
-- Issue / PR / session:
-- Setup run and result:
-- Custom agent selected and evidence:
-- Feedback comment / resulting commit:
-- Approval, final head SHA and check results:
+- Issue / PR / session: #16 → [PR #17](https://github.com/josema-muniz-plain/pomodoro-knight/pull/17) (merged 2026-11-22 by a human, head `082cff6`). Cloud-agent session runs observed: "Running Copilot cloud agent" (run `45053587280`) and "Addressing comment on PR #17" (run `45054103024`), both success.
+- Setup run and result: no standalone "Copilot setup steps" Actions run found; the setup appears integrated into the "Copilot cloud agent" dynamic runs. Inspect the session (View session) logs to confirm whether the `copilot-setup-steps` job (Node 22, `npm ci`) actually executed; not confirmed yet.
+- Custom agent selected and evidence: to confirm (assignment was done from the GitHub UI; no programmatic evidence of whether `blacksmith` or default Copilot was used).
+- Feedback comment / resulting commit: a comment was addressed (run `45054103024` "Addressing comment on PR #17"); comment text and resulting commit still to record.
+- Approval, final head SHA and check results: final head `082cff6`; CI, CodeQL and dependency review passed on the last head (runs `45054252911`, `45054252931`, `45054252854`). Initial PR checks had failed before the `@copilot` iteration.
 - Recovery and permission observations:
+
+### Pending explorations
+
+- [ ] **Continue in Copilot CLI from a cloud-started task**: from the #16 session / draft PR #17, use the session's "Continue" / "Continue in CLI" entry point. Observe whether the local Copilot CLI resumes the same session and branch (`copilot/add-level-2-tomato-knight-sprite`) or starts a new task; what it requires (auth, repo path); and whether local changes conflict with the cloud agent's commits. Record the exact command and outcome instead of assuming parity with the V1 `/agent` flow.
+- [ ] **Model selection for the agent / issue**: investigate the GitHub surface (assign-Copilot dialog, agent configuration) for any model picker exposed when assigning Copilot, and whether selecting a custom agent such as `blacksmith` overrides the model. Record the selection path and whether a choice persists per-repo or per-task.
 
 ## PK-066: authenticated MCP in cloud
 
